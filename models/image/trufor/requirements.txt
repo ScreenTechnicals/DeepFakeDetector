@@ -1,9 +1,9 @@
 fastapi==0.103.1
 uvicorn[standard]==0.23.2
-pydantic<2.0.0
+pydantic<3.0.0
 # torch and torchvision are installed separately in Dockerfile for CPU
-numpy==1.21.5 # Specific version from TruFor's test_docker/Dockerfile or conda.yaml
-Pillow==10.0.1
+numpy==2.4.6 # Specific version from TruFor's test_docker/Dockerfile or conda.yaml
+Pillow==12.2.0
 python-multipart
 timm==0.5.4 # Required by TruFor's SegFormer backbone
 yacs>=0.1.8 # For config management used by TruFor
