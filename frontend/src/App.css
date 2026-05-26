@@ -187,7 +187,6 @@ button {
   text-transform: uppercase;
 }
 
-.ds-status,
 .ds-segmented button,
 .ds-demo-grid button,
 .ds-run-button,
@@ -234,10 +233,10 @@ button {
 }
 
 .ds-shell {
-  width: min(1500px, calc(100% - 36px));
+  width: 100%;
   height: calc(100vh - 60px);
   margin: 0 auto;
-  padding: 18px 0;
+  padding: 0;
 }
 
 .ds-workspace {

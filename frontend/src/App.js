@@ -1,10 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.css';
 import {
   AlertCircle,
   AlertTriangle,
   CheckCircle2,
-  ChevronDown,
   FileSearch,
   Gauge,
   Image as ImageIcon,
@@ -38,9 +37,9 @@ const DEMO_MEDIA = {
 };
 
 const METHODS = [
-  { id: 'voting', label: 'Vote' },
-  { id: 'average', label: 'Average' },
-  { id: 'stacking', label: 'Stack' },
+  { id: 'voting', label: 'Balanced' },
+  { id: 'average', label: 'Score-based' },
+  { id: 'stacking', label: 'Strict' },
 ];
 
 function inferMediaType(file) {
@@ -69,7 +68,6 @@ function App() {
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
   const [systemHealth, setSystemHealth] = useState(null);
-  const [showHealth, setShowHealth] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [threshold, setThreshold] = useState(0.5);
   const [ensembleMethod, setEnsembleMethod] = useState('voting');
@@ -94,11 +92,6 @@ function App() {
       if (previewUrl && previewUrl.startsWith('blob:')) URL.revokeObjectURL(previewUrl);
     };
   }, [previewUrl]);
-
-  const availableModels = useMemo(() => {
-    const media = systemHealth?.media_type_details?.[activeMediaType]?.models || {};
-    return Object.entries(media);
-  }, [activeMediaType, systemHealth]);
 
   const handleFile = (file) => {
     if (!file) {
@@ -175,8 +168,8 @@ function App() {
   const status = systemHealth?.overall_api_status || 'checking';
   const statusClass = status === 'healthy' ? 'is-healthy' : 'is-warning';
   const demoItems = DEMO_MEDIA[activeMediaType] || [];
-  const activeModelCount = availableModels.filter(([, model]) => model.status === 'healthy').length;
   const analyzeLabel = activeMediaType === 'video' ? 'Analyze video' : 'Analyze image';
+  const reviewStyleLabel = METHODS.find((method) => method.id === ensembleMethod)?.label || 'Balanced';
 
   return (
     <div className="ds-app">
@@ -197,12 +190,10 @@ function App() {
         </div>
 
         <div className="ds-header-actions">
-          <div className="ds-kpi">{activeModelCount || 0} checks ready</div>
-          <button className={`ds-status ${statusClass}`} onClick={() => setShowHealth(true)}>
+          <div className={`ds-status ${statusClass}`}>
             <span />
             {status}
-            <ChevronDown size={16} />
-          </button>
+          </div>
         </div>
       </header>
 
@@ -294,8 +285,8 @@ function App() {
                   <strong>{threshold.toFixed(2)}</strong>
                 </div>
                 <div>
-                  <span>Ensemble</span>
-                  <strong>{ensembleMethod}</strong>
+                <span>Review style</span>
+                <strong>{reviewStyleLabel}</strong>
                 </div>
               </div>
 
@@ -348,14 +339,6 @@ function App() {
         />
       )}
 
-      {showHealth && (
-        <HealthModal
-          activeMediaType={activeMediaType}
-          availableModels={availableModels}
-          onClose={() => setShowHealth(false)}
-          status={status}
-        />
-      )}
     </div>
   );
 }
@@ -404,7 +387,7 @@ function SettingsModal({
 
         <div className="ds-control">
           <div className="ds-control-label">
-            <label>Ensemble method</label>
+            <label>Review style</label>
           </div>
           <div className="ds-segmented">
             {METHODS.map((method) => (
@@ -437,44 +420,6 @@ function SettingsModal({
               </button>
             ))}
           </div>
-        </div>
-      </section>
-    </div>
-  );
-}
-
-function HealthModal({ activeMediaType, availableModels, onClose, status }) {
-  return (
-    <div className="ds-modal-backdrop" role="presentation" onMouseDown={onClose}>
-      <section className="ds-settings-modal ds-health-modal" role="dialog" aria-modal="true" aria-label="System health" onMouseDown={(event) => event.stopPropagation()}>
-        <div className="ds-modal-header">
-          <div>
-            <span className="ds-label">System</span>
-            <h3>System health</h3>
-          </div>
-          <button className="ds-icon-button" onClick={onClose} aria-label="Close model health">
-            <X size={18} />
-          </button>
-        </div>
-
-        <div className="ds-health-summary">
-          <span className={status === 'healthy' ? 'dot green' : 'dot amber'} />
-          <strong>{status}</strong>
-          <small>{activeMediaType} pipeline</small>
-        </div>
-
-        <div className="ds-health-list">
-          {availableModels.length === 0 ? (
-            <p className="ds-muted">No check details available for {activeMediaType}.</p>
-          ) : availableModels.map(([id, model], index) => (
-            <div key={id} className="ds-health-item">
-              <span className={model.status === 'healthy' ? 'dot green' : 'dot amber'} />
-              <div>
-                <strong>Check {index + 1}</strong>
-                <small>{model.status || 'unknown'} {model.model_loaded ? '/ loaded' : '/ idle'}</small>
-              </div>
-            </div>
-          ))}
         </div>
       </section>
     </div>
