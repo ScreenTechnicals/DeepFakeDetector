@@ -6,7 +6,6 @@ from collections import OrderedDict
 import cv2
 import numpy as np
 import torch
-import torchvision.transforms as T
 import yaml
 from albumentations import Compose, PadIfNeeded
 
@@ -28,10 +27,6 @@ from efficient_vit import EfficientViT
 from facenet_pytorch import MTCNN
 from transforms.albu import IsotropicResize
 
-IMAGENET_NORMALIZE = T.Normalize(
-    mean=[0.485, 0.456, 0.406],
-    std=[0.229, 0.224, 0.225],
-)
 FACE_THRESHOLDS = [0.7, 0.8, 0.8]
 MTCNN_MIN_FACE_SIZE = 40
 
@@ -148,12 +143,12 @@ class CrossEfficientViTDetector(VideoModel):
                 if face_crop.size == 0:
                     continue
 
-                transformed = self.face_transform(image=face_crop)["image"]
-                tensor = (
-                    torch.from_numpy(transformed.astype(np.float32)).permute(2, 0, 1)
-                    / 255.0
+                model_crop = cv2.cvtColor(face_crop, cv2.COLOR_RGB2BGR)
+                transformed = self.face_transform(image=model_crop)["image"]
+                tensor = torch.from_numpy(transformed.astype(np.float32)).permute(
+                    2, 0, 1
                 )
-                tensor = IMAGENET_NORMALIZE(tensor).unsqueeze(0).to(self.device)
+                tensor = tensor.unsqueeze(0).to(self.device)
 
                 with torch.no_grad():
                     logits = self.model(tensor)
