@@ -1,10 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import './App.css';
 import {
-  Activity,
   AlertCircle,
   AlertTriangle,
-  BarChart3,
   CheckCircle2,
   ChevronDown,
   FileSearch,
@@ -13,8 +11,8 @@ import {
   Loader2,
   Play,
   RotateCcw,
+  Settings,
   ShieldCheck,
-  SlidersHorizontal,
   UploadCloud,
   Video,
   X,
@@ -37,12 +35,6 @@ const DEMO_MEDIA = {
     { id: 'fake_video_1', label: 'AI video 1', path: '/demo_videos/fake/1.mp4', type: 'video/mp4', badge: 'fake' },
     { id: 'fake_video_2', label: 'AI video 2', path: '/demo_videos/fake/2.mp4', type: 'video/mp4', badge: 'fake' },
   ],
-};
-
-const MODELS = {
-  npr_deepfakedetection: 'NPR Deepfake',
-  universalfakedetect: 'UniversalFakeDetect',
-  cross_efficient_vit: 'Cross Efficient ViT',
 };
 
 const METHODS = [
@@ -78,6 +70,7 @@ function App() {
   const [error, setError] = useState(null);
   const [systemHealth, setSystemHealth] = useState(null);
   const [showHealth, setShowHealth] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [threshold, setThreshold] = useState(0.5);
   const [ensembleMethod, setEnsembleMethod] = useState('voting');
 
@@ -183,6 +176,7 @@ function App() {
   const statusClass = status === 'healthy' ? 'is-healthy' : 'is-warning';
   const demoItems = DEMO_MEDIA[activeMediaType] || [];
   const activeModelCount = availableModels.filter(([, model]) => model.status === 'healthy').length;
+  const analyzeLabel = activeMediaType === 'video' ? 'Analyze video' : 'Analyze image';
 
   return (
     <div className="ds-app">
@@ -193,66 +187,50 @@ function App() {
           </div>
           <div>
             <h1>DeepSafe</h1>
-            <p>Media authenticity console</p>
+            <p>Authenticity analysis</p>
           </div>
         </div>
 
+        <div className="ds-header-title">
+          <span>Analyze</span>
+          <strong>Image and video inspection</strong>
+        </div>
+
         <div className="ds-header-actions">
-          <div className="ds-kpi">
-            <span>{activeMediaType}</span>
-            <strong>{activeModelCount || 0} models ready</strong>
-          </div>
-          <button className={`ds-status ${statusClass}`} onClick={() => setShowHealth((value) => !value)}>
+          <div className="ds-kpi">{activeModelCount || 0} checks ready</div>
+          <button className={`ds-status ${statusClass}`} onClick={() => setShowHealth(true)}>
             <span />
             {status}
-            <ChevronDown size={16} className={showHealth ? 'rotated' : ''} />
+            <ChevronDown size={16} />
           </button>
         </div>
       </header>
 
       <main className="ds-shell">
-        <section className="ds-titlebar">
-          <div>
-            <p className="ds-eyebrow">Analysis workspace</p>
-            <h2>Inspect media</h2>
-          </div>
-          <div className="ds-media-toggle" aria-label="Media type">
-            <button className={activeMediaType === 'image' ? 'active' : ''} onClick={() => setActiveMediaType('image')}>
-              <ImageIcon size={17} /> Image
-            </button>
-            <button className={activeMediaType === 'video' ? 'active' : ''} onClick={() => setActiveMediaType('video')}>
-              <Video size={17} /> Video
-            </button>
-          </div>
-        </section>
-
-        {showHealth && (
-          <section className="ds-health-panel">
-            <div className="ds-panel-heading">
-              <Activity size={18} />
-              Model status
-            </div>
-            <div className="ds-health-grid">
-              {availableModels.length === 0 ? (
-                <p className="ds-muted">No model details available for {activeMediaType}.</p>
-              ) : availableModels.map(([id, model]) => (
-                <div key={id} className="ds-health-item">
-                  <span className={model.status === 'healthy' ? 'dot green' : 'dot amber'} />
-                  <div>
-                    <strong>{MODELS[id] || id}</strong>
-                    <small>{model.status || 'unknown'} {model.model_loaded ? '/ loaded' : '/ idle'}</small>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
         <section className="ds-workspace">
-          <div className="ds-media-panel">
-            <div className="ds-panel-heading">
-              <UploadCloud size={18} />
-              Source media
+          <section className="ds-media-panel">
+            <div className="ds-panel-top">
+              <div>
+                <p className="ds-eyebrow">Input</p>
+                <h2>Select media</h2>
+              </div>
+            </div>
+
+            <div className="ds-mode-grid" aria-label="Media type">
+              <button className={activeMediaType === 'image' ? 'active' : ''} onClick={() => setActiveMediaType('image')}>
+                <ImageIcon size={19} />
+                <span>
+                  <strong>Image</strong>
+                  <small>Photos and generated stills</small>
+                </span>
+              </button>
+              <button className={activeMediaType === 'video' ? 'active' : ''} onClick={() => setActiveMediaType('video')}>
+                <Video size={19} />
+                <span>
+                  <strong>Video</strong>
+                  <small>Clips and face-swap media</small>
+                </span>
+              </button>
             </div>
 
             <label
@@ -296,97 +274,209 @@ function App() {
               )}
             </label>
 
-            <div className="ds-file-strip">
-              <div>
-                <span className="ds-label">File</span>
-                <strong>{selectedFile ? selectedFile.name : 'No file selected'}</strong>
-                <small>{selectedFile ? `${formatSize(selectedFile.size)} / ${activeMediaType}` : 'Choose a file or load a sample'}</small>
-              </div>
-              {selectedFile && (
-                <button className="ds-secondary-button" onClick={clearSelection}>
-                  <RotateCcw size={16} />
-                  Reset
-                </button>
-              )}
-            </div>
-
             {error && (
               <div className="ds-error">
                 <AlertCircle size={18} />
                 {error}
               </div>
             )}
-          </div>
 
-          <aside className="ds-control-panel">
-            <div className="ds-panel-heading">
-              <SlidersHorizontal size={18} />
-              Analysis setup
-            </div>
+            <div className="ds-command-bar">
+              <div className="ds-action-summary">
+                <span className="ds-label">Selected file</span>
+                <strong>{selectedFile ? selectedFile.name : 'Nothing selected yet'}</strong>
+                <small>{selectedFile ? `${formatSize(selectedFile.size)} / ${activeMediaType}` : 'Upload media or choose a sample from settings'}</small>
+              </div>
 
-            <div className="ds-control">
-              <div className="ds-control-label">
-                <label>Sensitivity</label>
-                <strong>{threshold.toFixed(2)}</strong>
+              <div className="ds-analysis-meta">
+                <div>
+                  <span>Threshold</span>
+                  <strong>{threshold.toFixed(2)}</strong>
+                </div>
+                <div>
+                  <span>Ensemble</span>
+                  <strong>{ensembleMethod}</strong>
+                </div>
               </div>
-              <input
-                type="range"
-                min="0.1"
-                max="0.9"
-                step="0.01"
-                value={threshold}
-                onChange={(event) => setThreshold(parseFloat(event.target.value))}
-              />
-              <div className="ds-control-row">
-                <span>Lower false positives</span>
-                <span>Stricter flagging</span>
-              </div>
-            </div>
 
-            <div className="ds-control">
-              <div className="ds-control-label">
-                <label>Ensemble</label>
-              </div>
-              <div className="ds-segmented">
-                {METHODS.map((method) => (
-                  <button
-                    key={method.id}
-                    className={ensembleMethod === method.id ? 'active' : ''}
-                    onClick={() => setEnsembleMethod(method.id)}
-                  >
-                    {method.label}
+              <div className="ds-action-buttons">
+                <button className="ds-run-button" onClick={handleAnalyze} disabled={!selectedFile || isAnalyzing}>
+                  {isAnalyzing ? <Loader2 className="spin" size={18} /> : <Play size={18} />}
+                  {isAnalyzing ? 'Analyzing' : analyzeLabel}
+                </button>
+                <button className="ds-secondary-button" onClick={() => setShowSettings(true)}>
+                  <Settings size={16} />
+                  Settings
+                </button>
+                {selectedFile && (
+                  <button className="ds-secondary-button" onClick={clearSelection}>
+                    <RotateCcw size={16} />
+                    Reset
                   </button>
-                ))}
+                )}
+              </div>
+            </div>
+          </section>
+
+          <section className="ds-output-panel">
+            <div className="ds-panel-top">
+              <div>
+                <p className="ds-eyebrow">Output</p>
+                <h2>Analysis result</h2>
               </div>
             </div>
 
-            <button className="ds-run-button" onClick={handleAnalyze} disabled={!selectedFile || isAnalyzing}>
-              {isAnalyzing ? <Loader2 className="spin" size={18} /> : <Play size={18} />}
-              {isAnalyzing ? 'Analyzing' : 'Run analysis'}
-            </button>
-
-            <div className="ds-control">
-              <div className="ds-control-label">
-                <label>Samples</label>
-              </div>
-              <div className="ds-demo-grid">
-                {demoItems.map((demo) => (
-                  <button key={demo.id} onClick={() => handleDemoMedia(demo)}>
-                    <span className={demo.badge === 'real' ? 'badge real' : 'badge fake'}>{demo.badge}</span>
-                    {demo.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </aside>
+            {results ? (
+              <ResultsPanel results={results} mediaType={activeMediaType} threshold={threshold} />
+            ) : (
+              <EmptyResults />
+            )}
+          </section>
         </section>
-
-        {results ? (
-          <ResultsPanel results={results} mediaType={activeMediaType} threshold={threshold} />
-        ) : (
-          <EmptyResults />
-        )}
       </main>
+
+      {showSettings && (
+        <SettingsModal
+          activeMediaType={activeMediaType}
+          demoItems={demoItems}
+          ensembleMethod={ensembleMethod}
+          onClose={() => setShowSettings(false)}
+          onDemoMedia={handleDemoMedia}
+          setEnsembleMethod={setEnsembleMethod}
+          setThreshold={setThreshold}
+          threshold={threshold}
+        />
+      )}
+
+      {showHealth && (
+        <HealthModal
+          activeMediaType={activeMediaType}
+          availableModels={availableModels}
+          onClose={() => setShowHealth(false)}
+          status={status}
+        />
+      )}
+    </div>
+  );
+}
+
+function SettingsModal({
+  activeMediaType,
+  demoItems,
+  ensembleMethod,
+  onClose,
+  onDemoMedia,
+  setEnsembleMethod,
+  setThreshold,
+  threshold,
+}) {
+  return (
+    <div className="ds-modal-backdrop" role="presentation" onMouseDown={onClose}>
+      <section className="ds-settings-modal" role="dialog" aria-modal="true" aria-label="Analysis settings" onMouseDown={(event) => event.stopPropagation()}>
+        <div className="ds-modal-header">
+          <div>
+            <span className="ds-label">Settings</span>
+            <h3>Analysis controls</h3>
+          </div>
+          <button className="ds-icon-button" onClick={onClose} aria-label="Close settings">
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="ds-control">
+          <div className="ds-control-label">
+            <label>Sensitivity threshold</label>
+            <strong>{threshold.toFixed(2)}</strong>
+          </div>
+          <input
+            type="range"
+            min="0.1"
+            max="0.9"
+            step="0.01"
+            value={threshold}
+            onChange={(event) => setThreshold(parseFloat(event.target.value))}
+          />
+          <div className="ds-control-row">
+            <span>Lower false positives</span>
+            <span>Stricter flagging</span>
+          </div>
+        </div>
+
+        <div className="ds-control">
+          <div className="ds-control-label">
+            <label>Ensemble method</label>
+          </div>
+          <div className="ds-segmented">
+            {METHODS.map((method) => (
+              <button
+                key={method.id}
+                className={ensembleMethod === method.id ? 'active' : ''}
+                onClick={() => setEnsembleMethod(method.id)}
+              >
+                {method.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="ds-control">
+          <div className="ds-control-label">
+            <label>{activeMediaType} samples</label>
+          </div>
+          <div className="ds-demo-grid">
+            {demoItems.map((demo) => (
+              <button
+                key={demo.id}
+                onClick={() => {
+                  onDemoMedia(demo);
+                  onClose();
+                }}
+              >
+                <span className={demo.badge === 'real' ? 'badge real' : 'badge fake'}>{demo.badge}</span>
+                {demo.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function HealthModal({ activeMediaType, availableModels, onClose, status }) {
+  return (
+    <div className="ds-modal-backdrop" role="presentation" onMouseDown={onClose}>
+      <section className="ds-settings-modal ds-health-modal" role="dialog" aria-modal="true" aria-label="System health" onMouseDown={(event) => event.stopPropagation()}>
+        <div className="ds-modal-header">
+          <div>
+            <span className="ds-label">System</span>
+            <h3>System health</h3>
+          </div>
+          <button className="ds-icon-button" onClick={onClose} aria-label="Close model health">
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="ds-health-summary">
+          <span className={status === 'healthy' ? 'dot green' : 'dot amber'} />
+          <strong>{status}</strong>
+          <small>{activeMediaType} pipeline</small>
+        </div>
+
+        <div className="ds-health-list">
+          {availableModels.length === 0 ? (
+            <p className="ds-muted">No check details available for {activeMediaType}.</p>
+          ) : availableModels.map(([id, model], index) => (
+            <div key={id} className="ds-health-item">
+              <span className={model.status === 'healthy' ? 'dot green' : 'dot amber'} />
+              <div>
+                <strong>Check {index + 1}</strong>
+                <small>{model.status || 'unknown'} {model.model_loaded ? '/ loaded' : '/ idle'}</small>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
@@ -397,7 +487,7 @@ function EmptyResults() {
       <FileSearch size={20} />
       <div>
         <strong>Results will appear here</strong>
-        <span>Run an analysis to view verdict, probability, and model evidence.</span>
+        <span>Run an analysis to view a simple authenticity report.</span>
       </div>
     </section>
   );
@@ -406,9 +496,18 @@ function EmptyResults() {
 function ResultsPanel({ results, mediaType, threshold }) {
   const isFake = results.is_likely_deepfake;
   const probability = results.deepfake_probability || 0;
-  const modelResults = Object.entries(results.model_results || {});
+  const checks = Object.values(results.model_results || {}).filter((result) => !result.error);
+  const flaggedChecks = checks.filter((result) => (
+    result.class === 'fake' || (typeof result.probability === 'number' && result.probability >= threshold)
+  )).length;
   const confidence = Math.abs(probability - threshold);
   const confidenceLabel = confidence > 0.25 ? 'High confidence' : confidence > 0.1 ? 'Moderate confidence' : 'Close call';
+  const evidenceTone = isFake
+    ? 'The media contains visual patterns that are commonly seen in manipulated or AI-generated content.'
+    : 'The media mostly matches patterns expected from authentic, unaltered content.';
+  const recommendation = isFake
+    ? 'Treat this file as suspicious and verify it with the original source before sharing or relying on it.'
+    : 'This file does not show strong signs of manipulation, but important media should still be verified with its source.';
 
   return (
     <section className="ds-results">
@@ -419,7 +518,7 @@ function ResultsPanel({ results, mediaType, threshold }) {
         <div className="ds-verdict-copy">
           <span className="ds-label">Verdict</span>
           <h3>{isFake ? 'Likely manipulated' : `Likely authentic ${mediaType}`}</h3>
-          <p>{confidenceLabel} / {results.ensemble_method_used || 'voting'} ensemble</p>
+          <p>{confidenceLabel} assessment</p>
         </div>
         <div className="ds-probability">
           <span>{pct(probability)}</span>
@@ -431,36 +530,36 @@ function ResultsPanel({ results, mediaType, threshold }) {
         <div className="ds-score-panel">
           <div className="ds-panel-heading">
             <Gauge size={18} />
-            Probability scale
+            Authenticity report
           </div>
-          <div className="ds-scale">
-            <span>Authentic</span>
-            <span>Threshold {threshold.toFixed(2)}</span>
-            <span>Manipulated</span>
-            <div className="ds-scale-track">
-              <div className="ds-threshold-pin" style={{ left: `${threshold * 100}%` }} />
-              <div className="ds-scale-pin" style={{ left: `${probability * 100}%` }} />
+          <div className="ds-report-grid">
+            <div>
+              <span>AI likelihood</span>
+              <strong>{pct(probability)}</strong>
+            </div>
+            <div>
+              <span>Confidence</span>
+              <strong>{confidenceLabel}</strong>
+            </div>
+            <div>
+              <span>Checks completed</span>
+              <strong>{checks.length || 'N/A'}</strong>
+            </div>
+            <div>
+              <span>Signals flagged</span>
+              <strong>{checks.length ? `${flaggedChecks} of ${checks.length}` : 'N/A'}</strong>
             </div>
           </div>
         </div>
 
         <div className="ds-score-panel">
           <div className="ds-panel-heading">
-            <BarChart3 size={18} />
-            Model evidence
+            <FileSearch size={18} />
+            Evidence summary
           </div>
-          <div className="ds-model-list">
-            {modelResults.length === 0 ? (
-              <p className="ds-muted">No model-level data returned.</p>
-            ) : modelResults.map(([name, result]) => (
-              <div key={name} className="ds-model-row">
-                <div>
-                  <strong>{MODELS[name] || name}</strong>
-                  <small>{result.error ? result.error : result.class || 'unknown'}</small>
-                </div>
-                {!result.error && <span>{pct(result.probability)}</span>}
-              </div>
-            ))}
+          <div className="ds-report-copy">
+            <p>{evidenceTone}</p>
+            <p>{recommendation}</p>
           </div>
         </div>
       </div>
