@@ -3,9 +3,9 @@
   "name": "DeepSafe - AI Deepfake Detection",
   "icons": [
     {
-      "src": "assets/deepsafe.png",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/png"
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
     },
     {
       "src": "assets/deepsafe.png",
@@ -20,6 +20,6 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#0ea5e9",
-  "background_color": "#ffffff"
+  "theme_color": "#050505",
+  "background_color": "#050505"
 }

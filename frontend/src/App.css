@@ -91,6 +91,7 @@ button {
 .ds-brand-mark,
 .ds-icon-button,
 .ds-upload-icon,
+.ds-empty-icon,
 .ds-verdict-icon {
   display: grid;
   place-items: center;
@@ -273,7 +274,7 @@ button {
 }
 
 .ds-media-panel {
-  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
 }
 
 .ds-output-panel {
@@ -283,6 +284,7 @@ button {
 }
 
 .ds-panel-top {
+  align-items: end;
   justify-content: space-between;
   gap: 14px;
   margin-bottom: 22px;
@@ -303,9 +305,10 @@ button {
 
 .ds-mode-grid {
   display: inline-flex;
+  flex: 0 0 auto;
   width: fit-content;
   gap: 0;
-  margin-bottom: 20px;
+  margin-bottom: 0;
   padding: 0;
   background: var(--ds-field);
   border: 1px solid var(--ds-border);
@@ -355,6 +358,7 @@ button {
   place-items: center;
   min-height: 0;
   height: 100%;
+  align-self: stretch;
   overflow: hidden;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 38%),
@@ -440,6 +444,7 @@ button {
   gap: 18px;
   margin-top: 18px;
   align-items: center;
+  align-self: end;
 }
 
 .ds-action-summary,
@@ -549,16 +554,27 @@ button {
 }
 
 .ds-empty-results {
-  flex: 1;
-  gap: 12px;
+  align-self: stretch;
+  flex: 0 0 auto;
+  gap: 14px;
   min-height: 0;
-  height: 100%;
-  margin-top: 0;
-  justify-content: center;
-  padding: 0 2rem;
+  width: 100%;
+  margin: 0;
+  padding: 22px 0;
   color: var(--ds-muted);
   background: transparent;
+  border-top: 1px solid var(--ds-border);
+  border-bottom: 1px solid var(--ds-border);
   box-shadow: none;
+}
+
+.ds-empty-icon {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  color: var(--ds-muted);
+  background: #0f0f10;
+  border: 1px solid var(--ds-border);
 }
 
 .ds-empty-results strong,
@@ -567,10 +583,17 @@ button {
 }
 
 .ds-empty-results strong {
-  margin-bottom: 4px;
+  margin-bottom: 5px;
   color: var(--ds-text);
-  font-size: 22px;
-  letter-spacing: -0.03em;
+  font-size: 18px;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.ds-empty-results span {
+  max-width: 34rem;
+  font-size: 14px;
+  line-height: 1.45;
 }
 
 .ds-results {
@@ -601,6 +624,10 @@ button {
   border-color: var(--ds-border);
 }
 
+.ds-verdict.warning {
+  border-color: var(--ds-border);
+}
+
 .ds-verdict-icon {
   flex: 0 0 auto;
   width: 42px;
@@ -616,6 +643,10 @@ button {
 
 .ds-verdict.real .ds-verdict-icon {
   color: var(--ds-green);
+}
+
+.ds-verdict.warning .ds-verdict-icon {
+  color: var(--ds-amber);
 }
 
 .ds-verdict-copy {
@@ -834,6 +865,14 @@ button {
   margin-bottom: 10px;
 }
 
+.ds-label-with-help {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
 .ds-control-label label {
   font-weight: 650;
 }
@@ -847,6 +886,45 @@ button {
   accent-color: #fff;
 }
 
+.ds-help {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  color: var(--ds-muted);
+  border: 1px solid var(--ds-border);
+  cursor: help;
+}
+
+.ds-tooltip,
+.ds-segmented-tooltip {
+  position: absolute;
+  z-index: 5;
+  left: 0;
+  bottom: calc(100% + 10px);
+  width: min(260px, 70vw);
+  padding: 9px 10px;
+  color: var(--ds-text);
+  background: #151516;
+  border: 1px solid var(--ds-border-strong);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.35;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(4px);
+  transition: opacity 140ms ease, transform 140ms ease;
+}
+
+.ds-help:hover .ds-tooltip,
+.ds-help:focus-visible .ds-tooltip,
+.ds-segmented button:hover .ds-segmented-tooltip,
+.ds-segmented button:focus-visible .ds-segmented-tooltip {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .ds-control-row {
   display: flex;
   justify-content: space-between;
@@ -856,7 +934,8 @@ button {
 }
 
 .ds-segmented {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
   padding: 4px;
   background: rgba(255, 255, 255, 0.045);
@@ -865,12 +944,31 @@ button {
 }
 
 .ds-segmented button {
-  flex: 1;
+  position: relative;
+  min-width: 0;
   min-height: 34px;
+  padding: 0 10px;
+  overflow: visible;
   color: var(--ds-muted);
   background: transparent;
   border-radius: 999px;
+  font-size: 14px;
   font-weight: 600;
+  white-space: nowrap;
+}
+
+.ds-segmented-tooltip {
+  left: 50%;
+  width: min(240px, 72vw);
+  color: var(--ds-text);
+  text-align: left;
+  transform: translate(-50%, 4px);
+  white-space: normal;
+}
+
+.ds-segmented button:hover .ds-segmented-tooltip,
+.ds-segmented button:focus-visible .ds-segmented-tooltip {
+  transform: translate(-50%, 0);
 }
 
 .ds-segmented button.active {
@@ -967,23 +1065,56 @@ button {
 
 @media (max-width: 720px) {
   .ds-topbar {
-    grid-template-columns: 1fr;
-    align-items: stretch;
-    padding: 12px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px 12px;
+    height: auto;
+    min-height: 64px;
+    padding: 10px 12px;
+  }
+
+  .ds-brand {
+    min-width: 0;
+  }
+
+  .ds-brand-mark {
+    width: 28px;
+    height: 28px;
+  }
+
+  .ds-brand h1 {
+    font-size: 14px;
+  }
+
+  .ds-brand p {
+    font-size: 11px;
   }
 
   .ds-header-title {
+    grid-column: 1 / -1;
     min-width: 0;
-    text-align: left;
+    padding-top: 8px;
+    text-align: center;
+    border-top: 1px solid var(--ds-border);
+  }
+
+  .ds-header-title span,
+  .ds-header-title strong {
+    font-size: 11.5px;
   }
 
   .ds-header-actions {
-    justify-content: stretch;
+    grid-column: 2;
+    grid-row: 1;
+    justify-content: flex-end;
   }
 
   .ds-status {
-    flex: 1;
+    flex: 0 0 auto;
     justify-content: center;
+    min-height: 30px;
+    padding: 0 9px;
+    font-size: 10.5px;
   }
 
   .ds-shell {
@@ -991,25 +1122,115 @@ button {
     padding-top: 16px;
   }
 
-  .ds-mode-grid,
   .ds-command-bar {
     grid-template-columns: 1fr;
   }
 
-  .ds-action-buttons,
-  .ds-verdict,
+  .ds-output-panel {
+    padding: 20px 18px;
+  }
+
   .ds-panel-top {
+    align-items: center;
+    flex-direction: row;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .ds-panel-top h2 {
+    margin-top: 4px;
+    font-size: 26px;
+    line-height: 1;
+  }
+
+  .ds-mode-grid {
+    flex: 0 0 auto;
+  }
+
+  .ds-mode-grid button {
+    min-height: 38px;
+    padding: 0 12px;
+    gap: 6px;
+  }
+
+  .ds-mode-grid strong {
+    font-size: 13px;
+  }
+
+  .ds-action-buttons,
+  .ds-verdict {
     align-items: stretch;
     flex-direction: column;
   }
 
   .ds-dropzone,
-  .ds-preview,
-  .ds-empty-results {
+  .ds-preview {
     min-height: 300px;
   }
 
+  .ds-output-panel {
+    min-height: 300px;
+  }
+
+  .ds-empty-results {
+    align-self: start;
+    grid-template-columns: auto minmax(0, 1fr);
+    margin: 10px 0 0;
+    padding: 18px 0;
+  }
+
+  .ds-empty-results strong {
+    font-size: 17px;
+  }
+
+  .ds-empty-results span {
+    font-size: 13.5px;
+  }
+
+  .ds-settings-modal {
+    max-height: calc(100vh - 20px);
+    padding: 16px;
+  }
+
+  .ds-modal-header h3 {
+    font-size: 20px;
+  }
+
+  .ds-segmented {
+    gap: 4px;
+    padding: 3px;
+  }
+
+  .ds-segmented button {
+    min-height: 36px;
+    padding: 0 6px;
+    font-size: 12.5px;
+  }
+
   .ds-probability {
+    text-align: left;
+  }
+}
+
+@media (max-width: 420px) {
+  .ds-panel-top h2 {
+    font-size: 22px;
+  }
+
+  .ds-mode-grid button {
+    padding: 0 9px;
+  }
+
+  .ds-mode-grid button svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .ds-mode-grid strong {
+    font-size: 12.5px;
+  }
+
+  .ds-header-title {
     text-align: left;
   }
 }

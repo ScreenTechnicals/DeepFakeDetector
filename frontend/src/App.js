@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   FileSearch,
   Gauge,
+  Info,
   Image as ImageIcon,
   Loader2,
   Play,
@@ -37,9 +38,9 @@ const DEMO_MEDIA = {
 };
 
 const METHODS = [
-  { id: 'voting', label: 'Balanced' },
-  { id: 'average', label: 'Score-based' },
-  { id: 'stacking', label: 'Strict' },
+  { id: 'voting', label: 'Balanced', hint: 'Best default for everyday checks. It weighs the available signals evenly.' },
+  { id: 'average', label: 'Score-based', hint: 'Uses probability scores directly. Useful when you want a smoother result.' },
+  { id: 'stacking', label: 'Strict', hint: 'Uses the strictest review path when available. It may flag more borderline files.' },
 ];
 
 function inferMediaType(file) {
@@ -205,23 +206,23 @@ function App() {
                 <p className="ds-eyebrow">Input</p>
                 <h2>Select media</h2>
               </div>
-            </div>
 
-            <div className="ds-mode-grid" aria-label="Media type">
-              <button className={activeMediaType === 'image' ? 'active' : ''} onClick={() => setActiveMediaType('image')}>
-                <ImageIcon size={19} />
-                <span>
-                  <strong>Image</strong>
-                  <small>Photos and generated stills</small>
-                </span>
-              </button>
-              <button className={activeMediaType === 'video' ? 'active' : ''} onClick={() => setActiveMediaType('video')}>
-                <Video size={19} />
-                <span>
-                  <strong>Video</strong>
-                  <small>Clips and face-swap media</small>
-                </span>
-              </button>
+              <div className="ds-mode-grid" aria-label="Media type">
+                <button className={activeMediaType === 'image' ? 'active' : ''} onClick={() => setActiveMediaType('image')}>
+                  <ImageIcon size={19} />
+                  <span>
+                    <strong>Image</strong>
+                    <small>Photos and generated stills</small>
+                  </span>
+                </button>
+                <button className={activeMediaType === 'video' ? 'active' : ''} onClick={() => setActiveMediaType('video')}>
+                  <Video size={19} />
+                  <span>
+                    <strong>Video</strong>
+                    <small>Clips and face-swap media</small>
+                  </span>
+                </button>
+              </div>
             </div>
 
             <label
@@ -368,7 +369,13 @@ function SettingsModal({
 
         <div className="ds-control">
           <div className="ds-control-label">
-            <label>Sensitivity threshold</label>
+            <div className="ds-label-with-help">
+              <label>Sensitivity threshold</label>
+              <span className="ds-help" tabIndex="0" aria-label="Higher sensitivity flags more files as suspicious. Lower sensitivity reduces false positives.">
+                <Info size={15} />
+                <span className="ds-tooltip">Higher values make DeepSafe stricter. Lower values reduce false positives.</span>
+              </span>
+            </div>
             <strong>{threshold.toFixed(2)}</strong>
           </div>
           <input
@@ -387,7 +394,13 @@ function SettingsModal({
 
         <div className="ds-control">
           <div className="ds-control-label">
-            <label>Review style</label>
+            <div className="ds-label-with-help">
+              <label>Review style</label>
+              <span className="ds-help" tabIndex="0" aria-label="Choose how DeepSafe combines available evidence.">
+                <Info size={15} />
+                <span className="ds-tooltip">Controls how DeepSafe combines the available evidence into one report.</span>
+              </span>
+            </div>
           </div>
           <div className="ds-segmented">
             {METHODS.map((method) => (
@@ -395,8 +408,11 @@ function SettingsModal({
                 key={method.id}
                 className={ensembleMethod === method.id ? 'active' : ''}
                 onClick={() => setEnsembleMethod(method.id)}
+                title={method.hint}
+                aria-label={`${method.label}. ${method.hint}`}
               >
                 {method.label}
+                <span className="ds-segmented-tooltip">{method.hint}</span>
               </button>
             ))}
           </div>
@@ -429,45 +445,61 @@ function SettingsModal({
 function EmptyResults() {
   return (
     <section className="ds-empty-results">
-      <FileSearch size={20} />
+      <div className="ds-empty-icon">
+        <FileSearch size={19} />
+      </div>
       <div>
-        <strong>Results will appear here</strong>
-        <span>Run an analysis to view a simple authenticity report.</span>
+        <strong>Awaiting analysis</strong>
+        <span>Upload media, then run DeepSafe to generate a plain-language report.</span>
       </div>
     </section>
   );
 }
 
 function ResultsPanel({ results, mediaType, threshold }) {
-  const isFake = results.is_likely_deepfake;
-  const probability = results.deepfake_probability || 0;
-  const checks = Object.values(results.model_results || {}).filter((result) => !result.error);
-  const flaggedChecks = checks.filter((result) => (
-    result.class === 'fake' || (typeof result.probability === 'number' && result.probability >= threshold)
-  )).length;
+  const modelResults = Object.values(results.model_results || {});
+  const failedChecks = modelResults.filter((result) => result.error);
+  const expectedChecks = modelResults.length || results.model_count || 0;
+  const checksCompleted = results.model_count || modelResults.filter((result) => !result.error).length;
+  const isIncomplete = failedChecks.length > 0 || (expectedChecks > 0 && checksCompleted < expectedChecks);
+  const isFake = !isIncomplete && results.is_likely_deepfake;
+  const probability = typeof results.deepfake_probability === 'number' ? results.deepfake_probability : 0;
+  const methodUsed = results.ensemble_method_used || results.ensemble_method_requested || 'default';
   const confidence = Math.abs(probability - threshold);
   const confidenceLabel = confidence > 0.25 ? 'High confidence' : confidence > 0.1 ? 'Moderate confidence' : 'Close call';
-  const evidenceTone = isFake
-    ? 'The media contains visual patterns that are commonly seen in manipulated or AI-generated content.'
-    : 'The media mostly matches patterns expected from authentic, unaltered content.';
-  const recommendation = isFake
+  const verdictTitle = isIncomplete
+    ? 'Analysis incomplete'
+    : isFake
+      ? 'Likely manipulated'
+      : `Likely authentic ${mediaType}`;
+  const verdictDetail = isIncomplete
+    ? 'Some checks could not finish'
+    : `${confidenceLabel} assessment`;
+  const evidenceTone = isIncomplete
+    ? `DeepSafe completed ${checksCompleted} of ${expectedChecks || checksCompleted} checks. The final verdict is paused because one detector did not return a result.`
+    : isFake
+    ? `DeepSafe returned a fake likelihood of ${pct(probability)}, which is above the current ${threshold.toFixed(2)} decision threshold.`
+    : `DeepSafe returned a fake likelihood of ${pct(probability)}, which is below the current ${threshold.toFixed(2)} decision threshold.`;
+  const recommendation = isIncomplete
+    ? 'Run the analysis again after the unavailable detector is healthy. Do not treat this file as authentic from this partial result.'
+    : isFake
     ? 'Treat this file as suspicious and verify it with the original source before sharing or relying on it.'
     : 'This file does not show strong signs of manipulation, but important media should still be verified with its source.';
 
   return (
     <section className="ds-results">
-      <div className={`ds-verdict ${isFake ? 'fake' : 'real'}`}>
+      <div className={`ds-verdict ${isIncomplete ? 'warning' : isFake ? 'fake' : 'real'}`}>
         <div className="ds-verdict-icon">
-          {isFake ? <AlertTriangle size={30} /> : <CheckCircle2 size={30} />}
+          {isIncomplete ? <AlertCircle size={30} /> : isFake ? <AlertTriangle size={30} /> : <CheckCircle2 size={30} />}
         </div>
         <div className="ds-verdict-copy">
           <span className="ds-label">Verdict</span>
-          <h3>{isFake ? 'Likely manipulated' : `Likely authentic ${mediaType}`}</h3>
-          <p>{confidenceLabel} assessment</p>
+          <h3>{verdictTitle}</h3>
+          <p>{verdictDetail}</p>
         </div>
         <div className="ds-probability">
-          <span>{pct(probability)}</span>
-          <small>AI probability</small>
+          <span>{isIncomplete ? '--' : pct(probability)}</span>
+          <small>{isIncomplete ? 'final score paused' : 'AI probability'}</small>
         </div>
       </div>
 
@@ -479,20 +511,20 @@ function ResultsPanel({ results, mediaType, threshold }) {
           </div>
           <div className="ds-report-grid">
             <div>
-              <span>AI likelihood</span>
+              <span>Fake likelihood</span>
               <strong>{pct(probability)}</strong>
             </div>
             <div>
               <span>Confidence</span>
-              <strong>{confidenceLabel}</strong>
+              <strong>{isIncomplete ? 'Incomplete' : confidenceLabel}</strong>
             </div>
             <div>
               <span>Checks completed</span>
-              <strong>{checks.length || 'N/A'}</strong>
+              <strong>{expectedChecks ? `${checksCompleted} / ${expectedChecks}` : checksCompleted || 'N/A'}</strong>
             </div>
             <div>
-              <span>Signals flagged</span>
-              <strong>{checks.length ? `${flaggedChecks} of ${checks.length}` : 'N/A'}</strong>
+              <span>{isIncomplete ? 'Checks unavailable' : 'Review method'}</span>
+              <strong>{isIncomplete ? failedChecks.length : methodUsed}</strong>
             </div>
           </div>
         </div>

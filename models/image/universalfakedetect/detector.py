@@ -1,5 +1,6 @@
 import os
 import sys
+import gc
 import torch
 from torchvision import transforms
 from deepsafe_sdk import ImageModel, PredictionResult
@@ -37,6 +38,8 @@ class UniversalFakeDetector(ImageModel):
         net = get_model("CLIP:ViT-L/14")
         state_dict = torch.load(weights_path, map_location="cpu", weights_only=False)
         net.fc.load_state_dict(state_dict)
+        del state_dict
+        gc.collect()
         net.to(self.device)
         net.eval()
         self.model = net
