@@ -1,5 +1,5 @@
 /**
- * formatters.js - Utility functions for formatting data in the DeepSafe UI
+ * formatters.js - Utility functions for formatting data in the DeepForensics UI
  */
 
 /**

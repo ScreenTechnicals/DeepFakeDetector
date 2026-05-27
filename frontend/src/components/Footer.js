@@ -15,19 +15,19 @@ const Footer = () => {
               <div className="flex items-center space-x-2">
                 <div className="overflow-hidden rounded-full">
                   <img 
-                    src="/assets/deepsafe.png" 
-                    alt="DeepSafe Logo" 
+                    src="/assets/deepforensics.png" 
+                    alt="DeepForensics Logo" 
                     className="h-8 w-8 object-cover"
                   />
                 </div>
-                <span className="text-xl font-bold text-white">DeepSafe</span>
+                <span className="text-xl font-bold text-white">DeepForensics</span>
               </div>
               <p className="text-sm text-neutral-400 leading-relaxed">
                 Leveraging cutting-edge AI to ensure digital authenticity and protect against sophisticated deepfakes.
               </p>
               <div className="flex space-x-4">
                 <a 
-                  href="https://github.com/siddharthksah/deepsafe" 
+                  href="https://github.com/siddharthksah/deepforensics" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="text-neutral-400 hover:text-primary-400 transition-colors duration-200"
@@ -36,7 +36,7 @@ const Footer = () => {
                   <Github className="h-5 w-5" />
                 </a>
                 <a 
-                  href="mailto:deepsafe.hq@gmail.com"
+                  href="mailto:deepforensics.hq@gmail.com"
                   className="text-neutral-400 hover:text-primary-400 transition-colors duration-200"
                   aria-label="Contact Email"
                 >
@@ -62,7 +62,7 @@ const Footer = () => {
                 </li>
                 <li>
                   <a 
-                    href="https://github.com/siddharthksah/deepsafe" 
+                    href="https://github.com/siddharthksah/deepforensics" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="text-sm text-neutral-400 hover:text-primary-400 transition-colors duration-200 flex items-center group"
@@ -73,7 +73,7 @@ const Footer = () => {
                 </li>
                 <li>
                   <a 
-                    href="mailto:deepsafe.hq@gmail.com?subject=DeepSafe Enterprise Inquiry"
+                    href="mailto:deepforensics.hq@gmail.com?subject=DeepForensics Enterprise Inquiry"
                     className="text-sm text-neutral-400 hover:text-primary-400 transition-colors duration-200"
                   >
                     Enterprise Solutions
@@ -90,7 +90,7 @@ const Footer = () => {
                 <span className="text-sm text-neutral-400">All systems operational</span>
               </div>
               <p className="text-xs text-neutral-500">
-                DeepSafe is continuously improving. Report issues on our GitHub repository.
+                DeepForensics is continuously improving. Report issues on our GitHub repository.
               </p>
             </div>
           </div>
@@ -98,7 +98,7 @@ const Footer = () => {
           {/* Bottom Bar */}
           <div className="mt-8 pt-8 border-t border-neutral-700/50 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
             <div className="text-sm text-neutral-500">
-              © {currentYear} DeepSafe. All rights reserved.
+              © {currentYear} DeepForensics. All rights reserved.
             </div>
             <div className="flex space-x-6 text-xs text-neutral-500">
               <a href="/privacy" className="hover:text-neutral-400 transition-colors">Privacy Policy</a>

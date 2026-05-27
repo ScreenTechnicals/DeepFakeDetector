@@ -1,5 +1,5 @@
 // frontend/src/utils/historyUtils.js
-const HISTORY_KEY = 'deepsafe_analysis_history';
+const HISTORY_KEY = 'deepforensics_analysis_history';
 const MAX_HISTORY_ITEMS = 50;
 
 export const getStoredHistory = () => {

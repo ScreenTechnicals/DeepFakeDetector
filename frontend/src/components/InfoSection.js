@@ -56,7 +56,7 @@ const InfoSection = ({ darkMode }) => {
             State-of-the-Art Deepfake Detection
           </p>
           <p className="mt-4 max-w-2xl text-xl text-neutral-500 dark:text-neutral-400 lg:mx-auto">
-            DeepSafe leverages a cutting-edge AI ensemble, featuring an advanced Stacking meta-learner, to protect against digital deception with industry-leading accuracy.
+            DeepForensics leverages a cutting-edge AI ensemble, featuring an advanced Stacking meta-learner, to protect against digital deception with industry-leading accuracy.
           </p>
         </div>
 
@@ -88,7 +88,7 @@ const InfoSection = ({ darkMode }) => {
         </div>
 
         <div className="mt-16 bg-gradient-to-r from-primary-600 to-primary-700 dark:from-primary-700 dark:to-primary-800 rounded-2xl shadow-xl p-8 text-center text-white">
-          <h3 className="text-2xl font-bold mb-4">DeepSafe Performance Highlights</h3>
+          <h3 className="text-2xl font-bold mb-4">DeepForensics Performance Highlights</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             <div>
               <p className="text-4xl font-bold">95%+<span className="text-2xl opacity-80">*</span></p>
@@ -111,10 +111,10 @@ const InfoSection = ({ darkMode }) => {
         <div className="mt-16 text-center">
           <h3 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">Commitment to Digital Authenticity</h3>
           <p className="mt-4 text-lg text-neutral-600 dark:text-neutral-400 max-w-3xl mx-auto">
-            In an era of rapidly advancing generative AI, DeepSafe provides a critical layer of defense against digital deception. Our ongoing research and development ensure that our detection capabilities evolve alongside emerging manipulation methods.
+            In an era of rapidly advancing generative AI, DeepForensics provides a critical layer of defense against digital deception. Our ongoing research and development ensure that our detection capabilities evolve alongside emerging manipulation methods.
           </p>
           <div className="mt-8 flex justify-center space-x-6">
-            <a href="https://github.com/siddharthksah/deepsafe" target="_blank" rel="noopener noreferrer" className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium transition-colors">
+            <a href="https://github.com/siddharthksah/deepforensics" target="_blank" rel="noopener noreferrer" className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium transition-colors">
               View Source Code
             </a>
             <a href="/docs" target="_blank" rel="noopener noreferrer" className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium transition-colors">

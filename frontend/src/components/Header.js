@@ -24,15 +24,15 @@ const Header = ({
                 <div className="absolute inset-0 bg-white/20 rounded-full blur-xl group-hover:blur-2xl transition-all duration-300"></div>
                 <div className="relative rounded-full shadow-xl transform transition-all duration-300 group-hover:scale-110 overflow-hidden">
                   <img 
-                    src="/assets/deepsafe.png" 
-                    alt="DeepSafe Logo" 
+                    src="/assets/deepforensics.png" 
+                    alt="DeepForensics Logo" 
                     className="h-11 w-11 object-cover rounded-full"
                   />
                 </div>
               </div>
               <div>
                 <h1 className="text-3xl font-bold tracking-tight flex items-baseline">
-                  DeepSafe
+                  DeepForensics
                   <span className="ml-2 text-xs font-normal bg-white/20 px-2 py-0.5 rounded-full">Beta</span>
                 </h1>
                 <p className="text-sm text-primary-100 dark:text-primary-200 opacity-90 mt-0.5">

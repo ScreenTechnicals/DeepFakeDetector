@@ -180,7 +180,7 @@ function App() {
             <ShieldCheck size={22} />
           </div>
           <div>
-            <h1>DeepSafe</h1>
+            <h1>DeepForensics</h1>
             <p>Authenticity analysis</p>
           </div>
         </div>
@@ -373,7 +373,7 @@ function SettingsModal({
               <label>Sensitivity threshold</label>
               <span className="ds-help" tabIndex="0" aria-label="Higher sensitivity flags more files as suspicious. Lower sensitivity reduces false positives.">
                 <Info size={15} />
-                <span className="ds-tooltip">Higher values make DeepSafe stricter. Lower values reduce false positives.</span>
+                <span className="ds-tooltip">Higher values make DeepForensics stricter. Lower values reduce false positives.</span>
               </span>
             </div>
             <strong>{threshold.toFixed(2)}</strong>
@@ -396,9 +396,9 @@ function SettingsModal({
           <div className="ds-control-label">
             <div className="ds-label-with-help">
               <label>Review style</label>
-              <span className="ds-help" tabIndex="0" aria-label="Choose how DeepSafe combines available evidence.">
+              <span className="ds-help" tabIndex="0" aria-label="Choose how DeepForensics combines available evidence.">
                 <Info size={15} />
-                <span className="ds-tooltip">Controls how DeepSafe combines the available evidence into one report.</span>
+                <span className="ds-tooltip">Controls how DeepForensics combines the available evidence into one report.</span>
               </span>
             </div>
           </div>
@@ -458,7 +458,7 @@ function EmptyResults() {
         </div>
         <div>
           <strong>Awaiting analysis</strong>
-          <span>Upload media, then run DeepSafe to generate a plain-language report.</span>
+          <span>Upload media, then run DeepForensics to generate a plain-language report.</span>
         </div>
       </div>
       <div className="ds-empty-preview">
@@ -502,7 +502,7 @@ function buildEvidenceReport({ isFake, isIncomplete, mediaType, probability, thr
   if (isIncomplete) {
     return {
       title: 'Partial forensic evidence',
-      lead: 'DeepSafe could not complete every detector, so the evidence below is intentionally conservative.',
+      lead: 'DeepForensics could not complete every detector, so the evidence below is intentionally conservative.',
       badge: 'Review required',
       items: [
         {
@@ -565,7 +565,7 @@ function buildEvidenceReport({ isFake, isIncomplete, mediaType, probability, thr
           signal: mediaType === 'video' ? 'Important' : 'Recommended',
           detail: mediaType === 'video'
             ? 'Frame-to-frame instability, flicker around glasses or beard edges, lip-sync drift, and shifting skin texture are weighted as stronger evidence in motion.'
-            : 'For a still image, DeepSafe recommends checking the source video for flicker around glasses, beard edges, blinking cadence, and unstable facial proportions.',
+            : 'For a still image, DeepForensics recommends checking the source video for flicker around glasses, beard edges, blinking cadence, and unstable facial proportions.',
         },
       ],
       verification: [
@@ -667,10 +667,10 @@ function ResultsPanel({ previewUrl, results, mediaType, threshold }) {
     ? 'Some checks could not finish'
     : `${confidenceLabel} assessment`;
   const evidenceTone = isIncomplete
-    ? `DeepSafe completed ${checksCompleted} of ${expectedChecks || checksCompleted} checks. The final verdict is paused because one detector did not return a result.`
+    ? `DeepForensics completed ${checksCompleted} of ${expectedChecks || checksCompleted} checks. The final verdict is paused because one detector did not return a result.`
     : isFake
-    ? `DeepSafe returned a fake likelihood of ${pct(probability)}, which is above the current ${threshold.toFixed(2)} decision threshold.`
-    : `DeepSafe returned a fake likelihood of ${pct(probability)}, which is below the current ${threshold.toFixed(2)} decision threshold.`;
+    ? `DeepForensics returned a fake likelihood of ${pct(probability)}, which is above the current ${threshold.toFixed(2)} decision threshold.`
+    : `DeepForensics returned a fake likelihood of ${pct(probability)}, which is below the current ${threshold.toFixed(2)} decision threshold.`;
   const recommendation = isIncomplete
     ? 'Run the analysis again after the unavailable detector is healthy. Do not treat this file as authentic from this partial result.'
     : isFake

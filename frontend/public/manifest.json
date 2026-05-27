@@ -1,6 +1,6 @@
 {
-  "short_name": "DeepSafe",
-  "name": "DeepSafe - AI Deepfake Detection",
+  "short_name": "DeepForensics",
+  "name": "DeepForensics - AI Deepfake Detection",
   "icons": [
     {
       "src": "favicon.svg",
@@ -8,12 +8,12 @@
       "type": "image/svg+xml"
     },
     {
-      "src": "assets/deepsafe.png",
+      "src": "assets/deepforensics.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "assets/deepsafe.png",
+      "src": "assets/deepforensics.png",
       "type": "image/png",
       "sizes": "512x512"
     }

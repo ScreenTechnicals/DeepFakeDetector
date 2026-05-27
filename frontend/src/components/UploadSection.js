@@ -95,8 +95,8 @@ const UploadSection = ({
       <div className="relative">
         <div className="w-24 h-24 mx-auto overflow-hidden rounded-full bg-white dark:bg-neutral-800 shadow-lg ring-4 ring-primary-100 dark:ring-primary-900/30">
           <img 
-            src="/assets/deepsafe.png" 
-            alt="DeepSafe" 
+            src="/assets/deepforensics.png" 
+            alt="DeepForensics" 
             className="w-full h-full object-cover"
           />
         </div>
@@ -115,8 +115,8 @@ const UploadSection = ({
       <div className="flex items-center mb-6">
         <div className="p-2 bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900/30 dark:to-primary-800/30 rounded-lg mr-3 overflow-hidden">
           <img 
-            src="/assets/deepsafe.png" 
-            alt="DeepSafe" 
+            src="/assets/deepforensics.png" 
+            alt="DeepForensics" 
             className="h-6 w-6 object-cover rounded-md"
           />
         </div>
@@ -129,7 +129,7 @@ const UploadSection = ({
             <EmptyStateIllustration />
             <h3 className="text-lg font-medium text-neutral-700 dark:text-neutral-300 mt-6">Audio Analysis Coming Soon!</h3>
             <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-2">
-              We're working on bringing advanced audio deepfake detection to DeepSafe.
+              We're working on bringing advanced audio deepfake detection to DeepForensics.
             </p>
             <div className="mt-4 inline-flex items-center px-3 py-1.5 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded-full text-xs font-medium">
               <Sparkles className="h-3 w-3 mr-1.5" />

@@ -37,7 +37,7 @@ const ResultsSection = ({ result, loading, modelProgress, debugMode, onExport, f
 
   const handleCopyResults = () => {
     if (!result) return;
-    const summary = `DeepSafe Analysis Report\nFile: ${fileName || 'Unknown'} (${mediaType})\nVerdict: ${result.is_likely_deepfake ? 'AI-Generated (Fake)' : 'Authentic (Real)'}\nAI-Generated Probability: ${formatProbability(result.deepfake_probability)}\nMethod: ${result.ensemble_method_used || 'N/A'}\nModels Used: ${result.model_count || 0}\nRequest ID: ${result.request_id}`;
+    const summary = `DeepForensics Analysis Report\nFile: ${fileName || 'Unknown'} (${mediaType})\nVerdict: ${result.is_likely_deepfake ? 'AI-Generated (Fake)' : 'Authentic (Real)'}\nAI-Generated Probability: ${formatProbability(result.deepfake_probability)}\nMethod: ${result.ensemble_method_used || 'N/A'}\nModels Used: ${result.model_count || 0}\nRequest ID: ${result.request_id}`;
     navigator.clipboard.writeText(summary).then(() => {
       setCopiedToClipboard(true);
       setTimeout(() => setCopiedToClipboard(false), 2000);
@@ -179,8 +179,8 @@ const ResultsSection = ({ result, loading, modelProgress, debugMode, onExport, f
           <div className="flex items-center">
             <div className="overflow-hidden rounded-full mr-2">
               <img 
-                src="/assets/deepsafe.png" 
-                alt="DeepSafe" 
+                src="/assets/deepforensics.png" 
+                alt="DeepForensics" 
                 className="h-6 w-6 object-cover"
               />
             </div>

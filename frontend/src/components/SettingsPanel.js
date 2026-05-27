@@ -86,8 +86,8 @@ const SettingsPanel = ({
           <div className="flex items-center">
             <div className="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-lg mr-3 overflow-hidden">
               <img 
-                src="/assets/deepsafe.png" 
-                alt="DeepSafe" 
+                src="/assets/deepforensics.png" 
+                alt="DeepForensics" 
                 className="h-6 w-6 object-cover rounded-md"
               />
             </div>
