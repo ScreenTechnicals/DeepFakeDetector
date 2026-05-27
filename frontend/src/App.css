@@ -596,6 +596,55 @@ button {
   line-height: 1.45;
 }
 
+.ds-empty-expanded {
+  display: grid;
+  gap: 20px;
+  align-items: start;
+}
+
+.ds-empty-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.ds-empty-preview {
+  display: grid;
+  gap: 12px;
+  padding-top: 18px;
+  border-top: 1px solid var(--ds-border);
+}
+
+.ds-empty-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  background: var(--ds-border);
+}
+
+.ds-empty-preview-grid div {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  min-height: 78px;
+  padding: 13px;
+  background: var(--ds-panel-alt);
+}
+
+.ds-empty-preview-grid svg {
+  margin-top: 2px;
+  color: var(--ds-amber);
+}
+
+.ds-empty-preview-grid p {
+  margin: 0;
+  color: var(--ds-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
 .ds-results {
   flex: 1;
   min-height: 0;
@@ -754,6 +803,130 @@ button {
 
 .ds-report-copy p {
   margin: 0;
+}
+
+.ds-evidence-panel .ds-panel-heading svg {
+  color: var(--ds-amber);
+}
+
+.ds-evidence-intro,
+.ds-verification-copy {
+  display: grid;
+  gap: 14px;
+  color: var(--ds-muted);
+  font-size: 14.5px;
+  line-height: 1.55;
+}
+
+.ds-evidence-intro {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+}
+
+.ds-evidence-intro p,
+.ds-verification-copy p {
+  margin: 0;
+}
+
+.ds-evidence-intro .badge {
+  margin-top: 2px;
+  white-space: nowrap;
+}
+
+.ds-evidence-models {
+  display: grid;
+  gap: 5px;
+  margin-top: 18px;
+  padding: 13px 0;
+  border-top: 1px solid var(--ds-border);
+  border-bottom: 1px solid var(--ds-border);
+}
+
+.ds-evidence-models span {
+  color: var(--ds-faint);
+  font-family: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.ds-evidence-models strong {
+  color: var(--ds-text);
+  font-size: 14px;
+  font-weight: 650;
+  text-transform: capitalize;
+}
+
+.ds-evidence-list {
+  display: grid;
+  gap: 0;
+  margin-top: 18px;
+  border-top: 1px solid var(--ds-border);
+}
+
+.ds-evidence-item {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 14px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--ds-border);
+}
+
+.ds-evidence-index {
+  color: var(--ds-faint);
+  font-family: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+}
+
+.ds-evidence-title {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.ds-evidence-title h4 {
+  margin: 0;
+  color: var(--ds-text);
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.ds-evidence-title span {
+  flex: 0 0 auto;
+  padding: 3px 7px;
+  color: #d8d8d8;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid var(--ds-border);
+  font-family: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.ds-evidence-item p {
+  margin: 7px 0 0;
+  color: var(--ds-muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.ds-verification-list {
+  display: grid;
+  gap: 9px;
+  margin-top: 2px;
+}
+
+.ds-verification-list div {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 9px;
+  align-items: start;
+  color: var(--ds-muted);
+}
+
+.ds-verification-list svg {
+  margin-top: 2px;
+  color: var(--ds-green);
 }
 
 .ds-scale-pin,
@@ -1174,9 +1347,12 @@ button {
 
   .ds-empty-results {
     align-self: start;
-    grid-template-columns: auto minmax(0, 1fr);
     margin: 10px 0 0;
     padding: 18px 0;
+  }
+
+  .ds-empty-head {
+    align-items: flex-start;
   }
 
   .ds-empty-results strong {
@@ -1185,6 +1361,10 @@ button {
 
   .ds-empty-results span {
     font-size: 13.5px;
+  }
+
+  .ds-empty-preview-grid {
+    grid-template-columns: 1fr;
   }
 
   .ds-settings-modal {
@@ -1209,6 +1389,24 @@ button {
 
   .ds-probability {
     text-align: left;
+  }
+
+  .ds-evidence-intro {
+    grid-template-columns: 1fr;
+  }
+
+  .ds-evidence-item {
+    grid-template-columns: 32px minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .ds-evidence-title {
+    display: grid;
+    gap: 7px;
+  }
+
+  .ds-evidence-title span {
+    width: fit-content;
   }
 }
 

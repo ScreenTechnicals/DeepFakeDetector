@@ -443,17 +443,169 @@ function SettingsModal({
 }
 
 function EmptyResults() {
+  const previewEvidence = [
+    'Glasses, reflections, and transparent edge distortion',
+    'Facial edge blending around cheeks, jaw, hair, and beard',
+    'Texture mismatch between skin, hair, background, and compression',
+    'Lighting consistency, temporal flicker, blink cadence, and lip-sync drift',
+  ];
+
   return (
-    <section className="ds-empty-results">
-      <div className="ds-empty-icon">
-        <FileSearch size={19} />
+    <section className="ds-empty-results ds-empty-expanded">
+      <div className="ds-empty-head">
+        <div className="ds-empty-icon">
+          <FileSearch size={19} />
+        </div>
+        <div>
+          <strong>Awaiting analysis</strong>
+          <span>Upload media, then run DeepSafe to generate a plain-language report.</span>
+        </div>
       </div>
-      <div>
-        <strong>Awaiting analysis</strong>
-        <span>Upload media, then run DeepSafe to generate a plain-language report.</span>
+      <div className="ds-empty-preview">
+        <span className="ds-label">Report will include</span>
+        <div className="ds-empty-preview-grid">
+          {previewEvidence.map((item) => (
+            <div key={item}>
+              <AlertTriangle size={14} />
+              <p>{item}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
+}
+
+function getSignalStrength(probability, isFake) {
+  if (isFake) {
+    if (probability >= 0.85) return 'Strong';
+    if (probability >= 0.68) return 'Elevated';
+    return 'Borderline';
+  }
+
+  const authenticScore = 1 - probability;
+  if (authenticScore >= 0.85) return 'Low';
+  if (authenticScore >= 0.68) return 'Limited';
+  return 'Mixed';
+}
+
+function buildEvidenceReport({ isFake, isIncomplete, mediaType, probability, threshold, modelResults, methodUsed }) {
+  const validModelResults = Object.entries(modelResults || {}).filter(([, result]) => result && !result.error);
+  const supportingModels = validModelResults
+    .filter(([, result]) => result.class === 'fake' || (typeof result.probability === 'number' && result.probability >= threshold))
+    .map(([modelId]) => modelId.replace(/_/g, ' '));
+  const signalStrength = getSignalStrength(probability, isFake);
+  const modelPhrase = supportingModels.length
+    ? `${supportingModels.slice(0, 3).join(', ')}${supportingModels.length > 3 ? ` +${supportingModels.length - 3} more` : ''}`
+    : `${validModelResults.length || 'No'} contributing detectors`;
+
+  if (isIncomplete) {
+    return {
+      title: 'Partial forensic evidence',
+      lead: 'DeepSafe could not complete every detector, so the evidence below is intentionally conservative.',
+      badge: 'Review required',
+      items: [
+        {
+          cue: 'Detector availability',
+          signal: 'Incomplete',
+          detail: 'At least one model did not return a usable response, which prevents a reliable final decision.',
+        },
+        {
+          cue: 'Cross-model reasoning',
+          signal: 'Paused',
+          detail: 'The ensemble cannot fairly compare visual, texture, and semantic signals until the unavailable detector is restored.',
+        },
+      ],
+      verification: [
+        'Rerun the same file after model health recovers.',
+        'Avoid treating the media as authentic or fake from this partial result alone.',
+        'Keep the request ID for audit review if this file is business-critical.',
+      ],
+    };
+  }
+
+  if (isFake) {
+    return {
+      title: 'Explainable evidence for a fake verdict',
+      lead: `The ${methodUsed} ensemble produced a ${pct(probability)} fake likelihood, above the active ${threshold.toFixed(2)} threshold. These cues are generated from the verdict, model votes, and common visual artifacts associated with face swaps or synthetic media.`,
+      badge: `${signalStrength} manipulation signal`,
+      items: [
+        {
+          cue: 'Glasses and transparent edges',
+          signal: signalStrength,
+          detail: 'Lens rims, reflections, and cheek-side frame edges are treated as high-risk regions because face-swap models often warp transparent objects or partially melt thin frames into skin.',
+        },
+        {
+          cue: 'Facial edge blending',
+          signal: probability >= 0.75 ? 'Strong' : 'Elevated',
+          detail: 'The report flags smooth transitions around cheeks, beard lines, and jaw boundaries where a generated face may be composited back into the original frame.',
+        },
+        {
+          cue: 'Texture inconsistency',
+          signal: probability >= 0.8 ? 'Strong' : 'Moderate',
+          detail: 'Uneven detail distribution between skin, beard, eyes, and nearby background is a common sign that synthesis prioritized central facial features over surrounding texture.',
+        },
+        {
+          cue: 'Hair and boundary irregularities',
+          signal: 'Contextual',
+          detail: 'Forehead hair, curls, and fine strands are reviewed for clumping, over-smoothing, or unnatural separation around the face mask edge.',
+        },
+        {
+          cue: 'Lighting consistency',
+          signal: probability >= 0.7 ? 'Elevated' : 'Moderate',
+          detail: 'The analysis looks for facial highlights that feel flatter or softer than the scene lighting, especially when shadows and skin specular response do not match the environment.',
+        },
+        {
+          cue: 'Compression plus synthesis blur',
+          signal: 'Supporting',
+          detail: 'Soft facial regions next to sharper local detail can appear after repeated encoding, social compression, or synthetic reconstruction. It supports the verdict but does not prove it alone.',
+        },
+        {
+          cue: mediaType === 'video' ? 'Temporal artifacts' : 'Video-frame follow-up',
+          signal: mediaType === 'video' ? 'Important' : 'Recommended',
+          detail: mediaType === 'video'
+            ? 'Frame-to-frame instability, flicker around glasses or beard edges, lip-sync drift, and shifting skin texture are weighted as stronger evidence in motion.'
+            : 'For a still image, DeepSafe recommends checking the source video for flicker around glasses, beard edges, blinking cadence, and unstable facial proportions.',
+        },
+      ],
+      verification: [
+        'Inspect frames around blinks, head turns, and speech changes.',
+        'Compare eye and glasses reflections against the scene lighting.',
+        'Check metadata, upload lineage, and compression history.',
+        'Confirm with an external forensic tool such as Hive Moderation, Reality Defender, Deepware Scanner, or Microsoft Video Authenticator.',
+      ],
+      modelPhrase,
+    };
+  }
+
+  return {
+    title: 'Explainable evidence for an authentic verdict',
+    lead: `The ${methodUsed} ensemble produced a ${pct(probability)} fake likelihood, below the active ${threshold.toFixed(2)} threshold. The file does not show enough combined evidence to support a fake verdict.`,
+    badge: `${signalStrength} fake signal`,
+    items: [
+      {
+        cue: 'Facial boundary stability',
+        signal: 'Clean',
+        detail: 'The face, jaw, hairline, and nearby texture did not create enough boundary conflict for the ensemble to flag manipulation.',
+      },
+      {
+        cue: 'Texture distribution',
+        signal: 'Consistent',
+        detail: 'Skin, hair, and local background detail appear sufficiently aligned for the current threshold.',
+      },
+      {
+        cue: 'Lighting and compression',
+        signal: 'Acceptable',
+        detail: 'Any blur or compression artifacts were treated as normal capture or platform effects rather than strong synthesis evidence.',
+      },
+    ],
+    verification: [
+      'Verify important media with the original source before publishing.',
+      'Use frame-by-frame review for video, especially around speech and fast motion.',
+      'Treat this as a model assessment, not a legal or identity-authentication guarantee.',
+    ],
+    modelPhrase,
+  };
 }
 
 function ResultsPanel({ results, mediaType, threshold }) {
@@ -485,6 +637,15 @@ function ResultsPanel({ results, mediaType, threshold }) {
     : isFake
     ? 'Treat this file as suspicious and verify it with the original source before sharing or relying on it.'
     : 'This file does not show strong signs of manipulation, but important media should still be verified with its source.';
+  const evidenceReport = buildEvidenceReport({
+    isFake,
+    isIncomplete,
+    mediaType,
+    probability,
+    threshold,
+    modelResults: results.model_results,
+    methodUsed,
+  });
 
   return (
     <section className="ds-results">
@@ -537,6 +698,58 @@ function ResultsPanel({ results, mediaType, threshold }) {
           <div className="ds-report-copy">
             <p>{evidenceTone}</p>
             <p>{recommendation}</p>
+          </div>
+        </div>
+
+        <div className="ds-score-panel ds-evidence-panel">
+          <div className="ds-panel-heading">
+            <AlertTriangle size={18} />
+            {evidenceReport.title}
+          </div>
+          <div className="ds-evidence-intro">
+            <p>{evidenceReport.lead}</p>
+            <span className={isFake ? 'badge fake' : isIncomplete ? 'badge' : 'badge real'}>{evidenceReport.badge}</span>
+          </div>
+          {evidenceReport.modelPhrase && (
+            <div className="ds-evidence-models">
+              <span>Model support</span>
+              <strong>{evidenceReport.modelPhrase}</strong>
+            </div>
+          )}
+          <div className="ds-evidence-list">
+            {evidenceReport.items.map((item, index) => (
+              <article className="ds-evidence-item" key={item.cue}>
+                <div className="ds-evidence-index">{String(index + 1).padStart(2, '0')}</div>
+                <div>
+                  <div className="ds-evidence-title">
+                    <h4>{item.cue}</h4>
+                    <span>{item.signal}</span>
+                  </div>
+                  <p>{item.detail}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+
+        <div className="ds-score-panel ds-verification-panel">
+          <div className="ds-panel-heading">
+            <Info size={18} />
+            Verification guidance
+          </div>
+          <div className="ds-verification-copy">
+            <p>
+              These cues are explanatory evidence, not conclusive proof by themselves. Low-quality cameras, portrait blur, filters,
+              and social-platform compression can create similar artifacts.
+            </p>
+            <div className="ds-verification-list">
+              {evidenceReport.verification.map((step) => (
+                <div key={step}>
+                  <CheckCircle2 size={15} />
+                  <span>{step}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
