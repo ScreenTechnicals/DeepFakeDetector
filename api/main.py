@@ -1356,6 +1356,164 @@ async def get_analysis_by_id(
     }
 
 
+# ===========================================================================
+# DeepForensics Pipeline Endpoints (Modules described in the manuscript)
+# ===========================================================================
+
+import threading
+import tempfile
+from fastapi.responses import FileResponse
+
+# In-memory job store for forensic analysis
+_forensics_jobs: Dict[str, Dict[str, Any]] = {}
+_forensics_pipeline = None
+_forensics_lock = threading.Lock()
+
+
+def _get_forensics_pipeline():
+    """Lazy-load the DeepForensics pipeline on first use."""
+    global _forensics_pipeline
+    if _forensics_pipeline is None:
+        try:
+            from deepforensics.pipeline import DeepForensicsPipeline
+            from deepforensics.config import PipelineConfig
+
+            config = PipelineConfig(
+                output_dir=os.path.join(
+                    tempfile.gettempdir(), "deepforensics_output"
+                )
+            )
+            _forensics_pipeline = DeepForensicsPipeline(config=config)
+            logger.info("DeepForensics pipeline initialized successfully.")
+        except Exception as e:
+            logger.error(f"Failed to initialize DeepForensics pipeline: {e}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"DeepForensics pipeline initialization failed: {str(e)}",
+            )
+    return _forensics_pipeline
+
+
+def _run_forensics_job(job_id: str, media_path: str):
+    """Background worker for a forensic analysis job."""
+    try:
+        _forensics_jobs[job_id]["status"] = "processing"
+        pipeline = _get_forensics_pipeline()
+        result = pipeline.analyze(media_path)
+
+        # Generate PDF report
+        from deepforensics.report import generate_report
+
+        output_dir = pipeline.config.output_dir
+        pdf_path = os.path.join(output_dir, f"report_{job_id}.pdf")
+        generate_report(result, pdf_path)
+
+        _forensics_jobs[job_id].update(
+            {
+                "status": "complete",
+                "result": result.model_dump(),
+                "pdf_path": pdf_path,
+            }
+        )
+        logger.info(f"Forensic job {job_id} completed: {result.verdict}")
+    except Exception as e:
+        logger.error(f"Forensic job {job_id} failed: {e}", exc_info=True)
+        _forensics_jobs[job_id].update(
+            {"status": "failed", "error": str(e)}
+        )
+    finally:
+        # Clean up temp media file
+        try:
+            if os.path.exists(media_path):
+                os.unlink(media_path)
+        except Exception:
+            pass
+
+
+@app.post("/api/analyze", tags=["DeepForensics"])
+async def forensic_analyze(file: UploadFile = File(...)):
+    """
+    Submit a media file for forensic deepfake analysis.
+
+    Returns a job_id that can be polled via GET /api/status/{job_id}.
+    The analysis runs asynchronously in a background thread.
+    """
+    job_id = str(uuid.uuid4())
+
+    # Save uploaded file to a temp location
+    suffix = os.path.splitext(file.filename or "upload")[1] or ".mp4"
+    with tempfile.NamedTemporaryFile(
+        delete=False, suffix=suffix, prefix=f"forensics_{job_id}_"
+    ) as tmp:
+        content = await file.read()
+        tmp.write(content)
+        tmp_path = tmp.name
+
+    _forensics_jobs[job_id] = {
+        "status": "pending",
+        "filename": file.filename,
+        "created_at": datetime.utcnow().isoformat(),
+    }
+
+    # Launch background analysis
+    thread = threading.Thread(
+        target=_run_forensics_job, args=(job_id, tmp_path), daemon=True
+    )
+    thread.start()
+
+    return {"job_id": job_id, "status": "pending"}
+
+
+@app.get("/api/status/{job_id}", tags=["DeepForensics"])
+async def forensic_status(job_id: str):
+    """
+    Check the status of a forensic analysis job.
+
+    Returns the full AnalysisResult JSON when the job is complete.
+    """
+    job = _forensics_jobs.get(job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail=f"Job {job_id} not found.")
+
+    response = {"job_id": job_id, "status": job["status"]}
+
+    if job["status"] == "complete":
+        response["result"] = job.get("result")
+    elif job["status"] == "failed":
+        response["error"] = job.get("error")
+
+    return response
+
+
+@app.get("/api/report/{job_id}", tags=["DeepForensics"])
+async def forensic_report(job_id: str):
+    """
+    Download the forensic PDF report for a completed analysis job.
+    """
+    job = _forensics_jobs.get(job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail=f"Job {job_id} not found.")
+
+    if job["status"] != "complete":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Job {job_id} is not complete (status: {job['status']}).",
+        )
+
+    pdf_path = job.get("pdf_path")
+    if not pdf_path or not os.path.exists(pdf_path):
+        raise HTTPException(
+            status_code=404, detail="PDF report not found for this job."
+        )
+
+    filename = f"DeepForensics_Report_{job_id[:8]}.pdf"
+    return FileResponse(
+        pdf_path,
+        media_type="application/pdf",
+        filename=filename,
+    )
+
+
 if __name__ == "__main__":
     if (
         not CONFIG_FILE_PATH_FROM_ENV

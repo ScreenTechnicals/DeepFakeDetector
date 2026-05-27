@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import './App.css';
 import {
   AlertCircle,
@@ -9,6 +9,7 @@ import {
   Info,
   Image as ImageIcon,
   Loader2,
+  Microscope,
   Play,
   RotateCcw,
   Settings,
@@ -17,6 +18,7 @@ import {
   Video,
   X,
 } from 'lucide-react';
+import ForensicResults from './components/ForensicResults';
 
 const API_BASE_URL = window.location.hostname === 'localhost' && window.location.port === '3000'
   ? 'http://localhost:8001'
@@ -72,6 +74,61 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [threshold, setThreshold] = useState(0.5);
   const [ensembleMethod, setEnsembleMethod] = useState('voting');
+
+  // Forensic analysis mode state
+  const [forensicMode, setForensicMode] = useState(false);
+  const [forensicJobId, setForensicJobId] = useState(null);
+  const [forensicResult, setForensicResult] = useState(null);
+  const [forensicStatus, setForensicStatus] = useState(null); // pending, processing, complete, failed
+
+  const handleForensicAnalyze = useCallback(async () => {
+    if (!selectedFile) return;
+    setIsAnalyzing(true);
+    setError(null);
+    setResults(null);
+    setForensicResult(null);
+    setForensicStatus('pending');
+
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/analyze`, {
+        method: 'POST',
+        body: formData,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || 'Forensic analysis submission failed');
+      }
+      const { job_id } = await res.json();
+      setForensicJobId(job_id);
+
+      // Poll for completion
+      const poll = setInterval(async () => {
+        try {
+          const statusRes = await fetch(`${API_BASE_URL}/api/status/${job_id}`);
+          const statusData = await statusRes.json();
+          setForensicStatus(statusData.status);
+
+          if (statusData.status === 'complete') {
+            clearInterval(poll);
+            setForensicResult(statusData.result);
+            setIsAnalyzing(false);
+          } else if (statusData.status === 'failed') {
+            clearInterval(poll);
+            setError(statusData.error || 'Forensic analysis failed');
+            setIsAnalyzing(false);
+          }
+        } catch {
+          // polling error — keep trying
+        }
+      }, 1000);
+    } catch (err) {
+      setError(err.message);
+      setIsAnalyzing(false);
+    }
+  }, [selectedFile]);
 
   useEffect(() => {
     let ignore = false;
@@ -208,18 +265,25 @@ function App() {
               </div>
 
               <div className="ds-mode-grid" aria-label="Media type">
-                <button className={activeMediaType === 'image' ? 'active' : ''} onClick={() => setActiveMediaType('image')}>
+                <button className={activeMediaType === 'image' && !forensicMode ? 'active' : ''} onClick={() => { setActiveMediaType('image'); setForensicMode(false); }}>
                   <ImageIcon size={19} />
                   <span>
                     <strong>Image</strong>
                     <small>Photos and generated stills</small>
                   </span>
                 </button>
-                <button className={activeMediaType === 'video' ? 'active' : ''} onClick={() => setActiveMediaType('video')}>
+                <button className={activeMediaType === 'video' && !forensicMode ? 'active' : ''} onClick={() => { setActiveMediaType('video'); setForensicMode(false); }}>
                   <Video size={19} />
                   <span>
                     <strong>Video</strong>
                     <small>Clips and face-swap media</small>
+                  </span>
+                </button>
+                <button className={forensicMode ? 'active forensic' : ''} onClick={() => { setForensicMode(true); setActiveMediaType('video'); }}>
+                  <Microscope size={19} />
+                  <span>
+                    <strong>Forensic</strong>
+                    <small>Full explainable analysis</small>
                   </span>
                 </button>
               </div>
@@ -292,9 +356,9 @@ function App() {
               </div>
 
               <div className="ds-action-buttons">
-                <button className="ds-run-button" onClick={handleAnalyze} disabled={!selectedFile || isAnalyzing}>
-                  {isAnalyzing ? <Loader2 className="spin" size={18} /> : <Play size={18} />}
-                  {isAnalyzing ? 'Analyzing' : analyzeLabel}
+                <button className="ds-run-button" onClick={forensicMode ? handleForensicAnalyze : handleAnalyze} disabled={!selectedFile || isAnalyzing}>
+                  {isAnalyzing ? <Loader2 className="spin" size={18} /> : forensicMode ? <Microscope size={18} /> : <Play size={18} />}
+                  {isAnalyzing ? (forensicMode ? `Analyzing (${forensicStatus || 'pending'})` : 'Analyzing') : (forensicMode ? 'Run forensic analysis' : analyzeLabel)}
                 </button>
                 <button className="ds-secondary-button" onClick={() => setShowSettings(true)}>
                   <Settings size={16} />
@@ -318,7 +382,9 @@ function App() {
               </div>
             </div>
 
-            {results ? (
+            {forensicMode && forensicResult ? (
+              <ForensicResults result={forensicResult} jobId={forensicJobId} apiBase={API_BASE_URL} />
+            ) : results ? (
               <ResultsPanel results={results} mediaType={activeMediaType} threshold={threshold} />
             ) : (
               <EmptyResults />

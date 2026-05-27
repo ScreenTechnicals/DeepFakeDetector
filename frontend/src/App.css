@@ -1234,3 +1234,372 @@ button {
     text-align: left;
   }
 }
+
+/* =========================================================================
+   DeepForensics — Forensic Analysis UI Components
+   ========================================================================= */
+
+/* Forensic tab highlight */
+.ds-mode-grid button.forensic.active {
+  background: linear-gradient(180deg, #a78bfa 0%, #7c3aed 100%);
+  color: #fff;
+  box-shadow: 0 0 12px rgba(124, 58, 237, 0.35);
+}
+
+.ds-mode-grid button.forensic.active small {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Forensic Results Container */
+.df-results {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* Verdict Banner */
+.df-verdict {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--ds-border);
+}
+
+.df-verdict-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--ds-border);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.df-verdict.fake .df-verdict-icon {
+  color: var(--ds-red);
+  border-color: rgba(255, 77, 79, 0.3);
+  background: rgba(255, 77, 79, 0.08);
+}
+
+.df-verdict.real .df-verdict-icon {
+  color: var(--ds-green);
+  border-color: rgba(0, 200, 83, 0.3);
+  background: rgba(0, 200, 83, 0.08);
+}
+
+.df-verdict-text {
+  flex: 1;
+}
+
+.df-verdict-text h3 {
+  margin: 4px 0 2px;
+  font-size: 32px;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+}
+
+.df-verdict-text p {
+  margin: 0;
+  color: var(--ds-muted);
+  font-size: 13px;
+}
+
+.df-label {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  color: var(--ds-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.df-verdict-score {
+  min-width: 96px;
+  text-align: right;
+}
+
+.df-verdict-score span {
+  display: block;
+  font-family: 'Geist Mono', monospace;
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.df-verdict-score small {
+  display: block;
+  color: var(--ds-faint);
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+/* Evidence Summary Card */
+.df-summary-card {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--ds-border);
+}
+
+.df-summary-card p {
+  margin: 0;
+  color: var(--ds-muted);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.df-card-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-weight: 650;
+  font-size: 14px;
+  color: var(--ds-text);
+}
+
+/* Score Cards Grid */
+.df-scores-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background: var(--ds-border);
+  border-top: 1px solid var(--ds-border);
+  border-bottom: 1px solid var(--ds-border);
+}
+
+.df-score-card {
+  position: relative;
+  padding: 18px 16px;
+  background: var(--ds-panel-alt);
+  overflow: hidden;
+}
+
+.df-score-card.disabled {
+  opacity: 0.5;
+}
+
+.df-score-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.df-score-icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--ds-border);
+}
+
+.df-score-header strong {
+  display: block;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.df-score-header small {
+  display: block;
+  color: var(--ds-faint);
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.df-score-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.df-score-value {
+  font-family: 'Geist Mono', monospace;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.df-score-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.df-score-row span {
+  color: var(--ds-muted);
+}
+
+.df-score-row strong {
+  font-family: 'Geist Mono', monospace;
+  font-weight: 600;
+}
+
+/* Status indicator bar at bottom of each card */
+.df-score-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+}
+
+.df-score-indicator.good {
+  background: var(--ds-green);
+}
+
+.df-score-indicator.warning {
+  background: var(--ds-amber);
+}
+
+.df-score-indicator.disabled {
+  background: var(--ds-border);
+}
+
+/* Heatmap Section */
+.df-section {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--ds-border);
+}
+
+.df-heatmap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.df-heatmap-controls {
+  display: flex;
+  gap: 0;
+  background: var(--ds-field);
+  border: 1px solid var(--ds-border);
+  width: fit-content;
+}
+
+.df-heatmap-controls button {
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ds-muted);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+
+.df-heatmap-controls button.active {
+  color: var(--ds-text);
+  background: var(--ds-panel-raised);
+}
+
+.df-heatmap-canvas {
+  width: 100%;
+  max-height: 340px;
+  overflow: hidden;
+  background: #000;
+  border: 1px solid var(--ds-border);
+}
+
+.df-heatmap-canvas img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.df-heatmap-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 200px;
+  color: var(--ds-faint);
+  font-size: 13px;
+}
+
+.df-region-tag {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--ds-panel-alt);
+  border: 1px solid var(--ds-border);
+  font-size: 13px;
+}
+
+.df-region-label {
+  color: var(--ds-faint);
+  font-size: 11px;
+  text-transform: uppercase;
+  font-family: 'Geist Mono', monospace;
+}
+
+.df-region-tag small {
+  color: var(--ds-faint);
+  font-size: 11px;
+  margin-left: auto;
+}
+
+/* Audit Block */
+.df-audit {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--ds-border);
+}
+
+.df-audit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background: var(--ds-border);
+}
+
+.df-audit-grid div {
+  padding: 10px 12px;
+  background: var(--ds-panel-alt);
+}
+
+.df-audit-grid span {
+  display: block;
+  color: var(--ds-faint);
+  font-size: 11px;
+  text-transform: uppercase;
+  font-family: 'Geist Mono', monospace;
+}
+
+.df-audit-grid strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  font-family: 'Geist Mono', monospace;
+  font-weight: 500;
+  word-break: break-all;
+}
+
+/* PDF Download Button */
+.df-actions {
+  padding: 18px 0;
+}
+
+.df-download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  background: linear-gradient(180deg, #7c3aed 0%, #6d28d9 100%);
+  border: 0;
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.df-download-btn:hover {
+  opacity: 0.9;
+}
+

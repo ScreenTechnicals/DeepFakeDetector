@@ -10,3 +10,14 @@ seaborn
 repo-to-text
 kaggle 
 tqdm
+# DeepForensics dependencies
+fastapi
+uvicorn
+python-multipart
+timm
+librosa
+mediapipe
+reportlab
+retinaface
+opencv-python
+torchaudio
