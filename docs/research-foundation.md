@@ -20,7 +20,7 @@ The research foundation of the project is based on generalizable deepfake detect
 
 ## Active Research Papers Used
 
-### 1. Rethinking the Up-Sampling Operations in CNN-based Generative Network for Generalizable Deepfake Detection
+### 1. Rethinking the Up-Sampling Operations in CNN-based Generative Network for Generalizable Deepfake Detection (Payal)
 
 **Authors:** Chuangchuang Tan, Huan Liu, Yao Zhao, Shikui Wei, Guanghua Gu, Ping Liu, Yunchao Wei  
 **Link:** https://arxiv.org/abs/2312.10461  
@@ -35,7 +35,7 @@ This paper introduces Neighboring Pixel Relationships, or NPR, for detecting art
 - Helps identify synthetic images created by GAN or diffusion-based generators.
 - Provides one model vote and probability score for ensemble fusion.
 
-### 2. Towards Universal Fake Image Detectors that Generalize Across Generative Models
+### 2. Towards Universal Fake Image Detectors that Generalize Across Generative Models (Chinmaya)
 
 **Authors:** Utkarsh Ojha, Yuheng Li, Yong Jae Lee  
 **Link:** https://arxiv.org/abs/2302.10174  
@@ -50,7 +50,7 @@ This paper studies fake image detection across unseen generative models. Instead
 - Improves generalization to unseen image generators.
 - Supports the ensemble by detecting broad fake-image patterns.
 
-### 3. Combining EfficientNet and Vision Transformers for Video Deepfake Detection
+### 3. Combining EfficientNet and Vision Transformers for Video Deepfake Detection (Sanjaya)
 
 **Authors:** Davide Coccomini, Nicola Messina, Claudio Gennaro, Fabrizio Falchi  
 **Link:** https://arxiv.org/abs/2107.02612  
@@ -65,7 +65,7 @@ This paper combines EfficientNet feature extraction with Vision Transformer-base
 - Extracts visual patterns across sampled frames.
 - Adds video-specific evidence to the overall architecture.
 
-### 4. Learning Transferable Visual Models From Natural Language Supervision
+### 4. Learning Transferable Visual Models From Natural Language Supervision (Samarth)
 
 **Authors:** Alec Radford, Jong Wook Kim, Chris Hallacy, Aditya Ramesh, Gabriel Goh, Sandhini Agarwal, Girish Sastry, Amanda Askell, Pamela Mishkin, Jack Clark, Gretchen Krueger, Ilya Sutskever  
 **Link:** https://arxiv.org/abs/2103.00020  
