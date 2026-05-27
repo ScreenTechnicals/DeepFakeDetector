@@ -8,7 +8,7 @@
 
 DeepForensics is a deepfake forensics system that combines multiple state-of-the-art detection models into one practical web application. The system accepts image and video inputs, runs detector services through a FastAPI gateway, fuses their outputs using ensemble methods, and presents the result through a forensic-style frontend with confidence scores, evidence summaries, and Grad-CAM-style visual explanations.
 
-The research foundation of the project is based on generalizable deepfake detection, CLIP-based fake image recognition, video deepfake detection using EfficientNet and Vision Transformers, and ensemble fusion. The current implementation uses active Docker services for image and video detection, while additional model folders provide optional extension paths for audio and more image detectors.
+The research foundation of the project is based on generalizable deepfake detection, CLIP-based fake image recognition, video deepfake detection using EfficientNet and Vision Transformers, and ensemble fusion. The current implementation focuses on image and video detection.
 
 ## Research Objectives
 
@@ -81,21 +81,7 @@ CLIP is not a deepfake detector by itself in this project, but it is an importan
 
 ## Optional or Extension Research References
 
-### 5. AI-Synthesized Voice Detection Using Neural Vocoder Artifacts
-
-**Authors:** Chengzhe Sun, Shan Jia, Shuwei Hou, Siwei Lyu  
-**Link:** https://openaccess.thecvf.com/content/CVPR2023W/WMF/html/Sun_AI-Synthesized_Voice_Detection_Using_Neural_Vocoder_Artifacts_CVPRW_2023_paper.html  
-**Repository reference:** `models/audio/vocoder_artifacts/`
-
-This paper detects synthesized speech by identifying neural vocoder artifacts. The repository contains an audio model integration folder for this work, but audio detection is not part of the currently active frontend flow unless enabled and configured.
-
-**Possible extension:**
-
-- Add audio upload support.
-- Detect AI-generated speech.
-- Combine audio, image, and video signals into a multimodal forensic verdict.
-
-### 6. DeepfakeBench-based Detectors
+### 5. DeepfakeBench-based Detectors
 
 **Repository references:**
 
@@ -170,7 +156,6 @@ The originality is not inventing a new neural network from scratch. The contribu
 2. Ojha, U., Li, Y., and Lee, Y. J. **Towards Universal Fake Image Detectors that Generalize Across Generative Models.** arXiv:2302.10174.
 3. Coccomini, D., Messina, N., Gennaro, C., and Falchi, F. **Combining EfficientNet and Vision Transformers for Video Deepfake Detection.** arXiv:2107.02612.
 4. Radford, A., Kim, J. W., Hallacy, C., et al. **Learning Transferable Visual Models From Natural Language Supervision.** arXiv:2103.00020.
-5. Sun, C., Jia, S., Hou, S., and Lyu, S. **AI-Synthesized Voice Detection Using Neural Vocoder Artifacts.** CVPR Workshops, 2023.
 
 ## Important Note
 
