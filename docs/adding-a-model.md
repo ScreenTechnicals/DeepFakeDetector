@@ -1,6 +1,6 @@
-# Adding a New Model to DeepSafe
+# Adding a New Model to DeepForensics
 
-DeepSafe uses a shared SDK so you only write the model-specific logic. Everything else — the HTTP server, health checks, lazy loading, thread safety — is handled for you.
+DeepForensics uses a shared SDK so you only write the model-specific logic. Everything else — the HTTP server, health checks, lazy loading, thread safety — is handled for you.
 
 ## Quick Start
 
@@ -179,7 +179,7 @@ docker compose up -d --build my_model
 curl http://localhost:5020/health
 ```
 
-Your model is now part of the DeepSafe ensemble.
+Your model is now part of the DeepForensics ensemble.
 
 ## Automated Setup (Steps 4-5)
 

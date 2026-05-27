@@ -1,6 +1,6 @@
-# Contributing to DeepSafe
+# Contributing to DeepForensics
 
-Thank you for your interest in contributing to DeepSafe! We welcome contributions from the community to help make the internet a safer place by detecting deepfakes.
+Thank you for your interest in contributing to DeepForensics! We welcome contributions from the community to help make the internet a safer place by detecting deepfakes.
 
 ## How to Contribute
 

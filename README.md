@@ -1,4 +1,4 @@
-# DeepSafe
+# DeepForensics
 
 **Enterprise-grade deepfake detection across image, video, and audio.**
 
@@ -9,7 +9,7 @@
 [![Dataset on HF](https://img.shields.io/badge/HuggingFace-Dataset-orange)](https://huggingface.co/datasets/siddharthksah/DeepSafe-benchmark)
 [![Weights on HF](https://img.shields.io/badge/HuggingFace-Weights-orange)](https://huggingface.co/siddharthksah/deepsafe-weights)
 
-DeepSafe is a modular platform that combines multiple state-of-the-art deepfake detection models into a single ensemble system. Each model runs in its own Docker container. A central API gateway orchestrates requests, dispatches them to model services, and fuses results using voting, averaging, or a trained stacking meta-learner.
+DeepForensics is a modular platform that combines multiple state-of-the-art deepfake detection models into a single ensemble system. Each model runs in its own Docker container. A central API gateway orchestrates requests, dispatches them to model services, and fuses results using voting, averaging, or a trained stacking meta-learner.
 
 **Add a new model in minutes, retrain the ensemble in one command.**
 
@@ -84,7 +84,7 @@ Stacking uses pre-trained artifacts in `api/meta_model_artifacts/`. Retrain anyt
 
 ## Adding a New Model
 
-DeepSafe ships with an SDK that handles HTTP serving, health checks, lazy loading, and thread safety. You write only the inference logic.
+DeepForensics ships with an SDK that handles HTTP serving, health checks, lazy loading, and thread safety. You write only the inference logic.
 
 ### Automated
 
@@ -220,7 +220,7 @@ make clean         # Remove containers and caches
 ## Project Structure
 
 ```
-DeepSafe/
+DeepForensics/
 ├── api/                        # FastAPI gateway
 │   ├── main.py                 # API routes, ensemble logic, auth
 │   ├── database.py             # SQLAlchemy models (analysis history)
@@ -233,7 +233,7 @@ DeepSafe/
 │   │   └── universalfakedetect/
 │   └── video/
 │       └── cross_efficient_vit/
-├── frontend/                   # React + Tailwind dashboard
+├── frontend/                   # React dashboard
 ├── config/
 │   └── deepsafe_config.json    # Model registry
 ├── scripts/
@@ -274,7 +274,7 @@ MIT License. See [LICENSE](LICENSE).
 
 ## Credits
 
-DeepSafe integrates the following open-source research:
+DeepForensics integrates the following open-source research:
 
 - **NPR Deepfake**: Chuangchuang Tan et al. ([GitHub](https://github.com/chuangchuangtan/NPR-DeepfakeDetection))
 - **UniversalFakeDetect**: Utkarsh Ojha, Yuheng Li, Yong Jae Lee ([GitHub](https://github.com/WisconsinAIVision/UniversalFakeDetect))
@@ -284,9 +284,9 @@ DeepSafe integrates the following open-source research:
 ## Citation
 
 ```bibtex
-@misc{deepsafe,
+@misc{deepforensics,
   author = {Siddharth Kumar},
-  title = {DeepSafe: Enterprise-Grade Deepfake Detection Platform},
+  title = {DeepForensics: Enterprise-Grade Deepfake Detection Platform},
   year = {2025},
   publisher = {GitHub},
   url = {https://github.com/siddharthksah/DeepSafe}
