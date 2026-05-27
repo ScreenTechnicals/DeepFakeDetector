@@ -11,12 +11,6 @@
 
 DeepForensics is a modular platform that combines multiple state-of-the-art deepfake detection models into a single ensemble system. Each model runs in its own Docker container. A central API gateway orchestrates requests, dispatches them to model services, and fuses results using voting, averaging, or a trained stacking meta-learner.
 
-**Add a new model in minutes, retrain the ensemble in one command.**
-
-<div align="center">
-  <img src="docs/images/dashboard_1.png" alt="Dashboard" width="90%">
-</div>
-
 ---
 
 ## Architecture
@@ -246,15 +240,6 @@ DeepForensics/
 └── Makefile
 ```
 
----
-
-## UI Preview
-
-<div align="center">
-  <img src="docs/images/login.png" alt="Login" width="45%">
-  <img src="docs/images/dashboard_2.png" alt="Analysis" width="45%">
-  <img src="docs/images/dashboard_3.png" alt="Results" width="45%">
-</div>
 
 ---
 
