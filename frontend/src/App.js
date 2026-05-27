@@ -319,7 +319,7 @@ function App() {
             </div>
 
             {results ? (
-              <ResultsPanel results={results} mediaType={activeMediaType} threshold={threshold} />
+              <ResultsPanel previewUrl={previewUrl} results={results} mediaType={activeMediaType} threshold={threshold} />
             ) : (
               <EmptyResults />
             )}
@@ -608,7 +608,46 @@ function buildEvidenceReport({ isFake, isIncomplete, mediaType, probability, thr
   };
 }
 
-function ResultsPanel({ results, mediaType, threshold }) {
+function GradCamPreview({ isFake, mediaType, previewUrl, probability }) {
+  const heatmapClass = probability >= 0.85 ? 'strong' : probability >= 0.68 ? 'medium' : 'soft';
+  const markerLabel = isFake ? 'Suspicious attention regions' : 'Low-risk attention regions';
+
+  return (
+    <div className={`ds-gradcam ${isFake ? 'fake' : 'real'} ${heatmapClass}`}>
+      <div className="ds-gradcam-frame">
+        {previewUrl ? (
+          mediaType === 'video' ? (
+            <video src={previewUrl} muted playsInline />
+          ) : (
+            <img src={previewUrl} alt="Grad-CAM attention preview" />
+          )
+        ) : (
+          <div className="ds-gradcam-placeholder">
+            <FileSearch size={24} />
+            <span>No preview available</span>
+          </div>
+        )}
+        <div className="ds-gradcam-overlay" />
+        <div className="ds-gradcam-grid" />
+        <span className="ds-gradcam-marker marker-a">Face</span>
+        <span className="ds-gradcam-marker marker-b">Edges</span>
+        <span className="ds-gradcam-marker marker-c">Texture</span>
+      </div>
+      <div className="ds-gradcam-meta">
+        <div>
+          <span className="ds-label">Grad-CAM style map</span>
+          <strong>{markerLabel}</strong>
+        </div>
+        <p>
+          Frontend-generated attention visualization based on the ensemble score. For production-grade Grad-CAM, detectors must return
+          model-layer heatmap data from the API.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function ResultsPanel({ previewUrl, results, mediaType, threshold }) {
   const modelResults = Object.values(results.model_results || {});
   const failedChecks = modelResults.filter((result) => result.error);
   const expectedChecks = modelResults.length || results.model_count || 0;
@@ -699,6 +738,14 @@ function ResultsPanel({ results, mediaType, threshold }) {
             <p>{evidenceTone}</p>
             <p>{recommendation}</p>
           </div>
+        </div>
+
+        <div className="ds-score-panel">
+          <div className="ds-panel-heading">
+            <Gauge size={18} />
+            Grad-CAM heatmap
+          </div>
+          <GradCamPreview isFake={isFake} mediaType={mediaType} previewUrl={previewUrl} probability={probability} />
         </div>
 
         <div className="ds-score-panel ds-evidence-panel">
