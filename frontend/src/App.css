@@ -838,9 +838,9 @@ button {
   height: 100%;
   min-height: 0;
   object-fit: contain;
-  opacity: 0.78;
+  opacity: 0.94;
   mix-blend-mode: screen;
-  filter: saturate(1.2);
+  filter: saturate(1.75) contrast(1.18) brightness(1.08);
   pointer-events: none;
 }
 
@@ -873,13 +873,13 @@ button {
 
 .ds-gradcam-overlay {
   mix-blend-mode: screen;
-  opacity: 0.72;
+  opacity: 0.84;
   background:
     radial-gradient(circle at 49% 32%, rgba(255, 31, 31, 0.86), transparent 15%),
     radial-gradient(circle at 57% 47%, rgba(255, 177, 0, 0.74), transparent 18%),
     radial-gradient(circle at 42% 56%, rgba(0, 201, 83, 0.38), transparent 19%),
     radial-gradient(circle at 54% 70%, rgba(0, 132, 255, 0.24), transparent 22%);
-  filter: blur(12px) saturate(1.25);
+  filter: blur(10px) saturate(1.65) contrast(1.12);
 }
 
 .ds-gradcam.real .ds-gradcam-overlay {
@@ -899,7 +899,7 @@ button {
 }
 
 .ds-gradcam.strong .ds-gradcam-overlay {
-  opacity: 0.78;
+  opacity: 0.92;
 }
 
 .ds-gradcam-grid {

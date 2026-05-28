@@ -621,8 +621,8 @@ function getModelHeatmap(modelResults = {}) {
   };
 }
 
-function GradCamPreview({ isFake, mediaType, modelResults, previewUrl, probability }) {
-  const heatmapClass = probability >= 0.85 ? 'strong' : probability >= 0.68 ? 'medium' : 'soft';
+function GradCamPreview({ isFake, modelResults, previewUrl }) {
+  const heatmapClass = 'strong';
   const modelHeatmap = getModelHeatmap(modelResults);
   const markerLabel = modelHeatmap
     ? 'Model-derived Grad-CAM'
@@ -634,11 +634,7 @@ function GradCamPreview({ isFake, mediaType, modelResults, previewUrl, probabili
     <div className={`ds-gradcam ${isFake ? 'fake' : 'real'} ${heatmapClass} ${modelHeatmap ? 'has-real-map' : ''}`}>
       <div className="ds-gradcam-frame">
         {previewUrl ? (
-          mediaType === 'video' ? (
-            <video src={previewUrl} muted playsInline />
-          ) : (
-            <img src={previewUrl} alt="Grad-CAM attention preview" />
-          )
+          <img src={previewUrl} alt="Grad-CAM attention preview" />
         ) : (
           <div className="ds-gradcam-placeholder">
             <FileSearch size={24} />
@@ -773,19 +769,19 @@ function ResultsPanel({ previewUrl, results, mediaType, threshold }) {
           </div>
         </div>
 
-        <div className="ds-score-panel">
-          <div className="ds-panel-heading">
-            <Gauge size={18} />
-            Grad-CAM heatmap
+        {mediaType === 'image' && (
+          <div className="ds-score-panel">
+            <div className="ds-panel-heading">
+              <Gauge size={18} />
+              Grad-CAM heatmap
+            </div>
+            <GradCamPreview
+              isFake={isFake}
+              modelResults={results.model_results}
+              previewUrl={previewUrl}
+            />
           </div>
-          <GradCamPreview
-            isFake={isFake}
-            mediaType={mediaType}
-            modelResults={results.model_results}
-            previewUrl={previewUrl}
-            probability={probability}
-          />
-        </div>
+        )}
 
         <div className="ds-score-panel ds-evidence-panel">
           <div className="ds-panel-heading">
