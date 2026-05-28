@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -7,6 +9,9 @@ class PredictionResult(BaseModel):
     prediction: int = Field(ge=0, le=1)
     class_name: str = Field(serialization_alias="class")
     inference_time: float
+    heatmap: Optional[str] = None
+    heatmap_type: Optional[str] = None
+    heatmap_model: Optional[str] = None
 
     def model_dump(self, *args, **kwargs):
         by_alias = kwargs.pop("by_alias", False)

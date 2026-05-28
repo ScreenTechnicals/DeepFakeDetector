@@ -416,7 +416,8 @@ It shows:
 - model support,
 - suspicious visual cues,
 - verification guidance,
-- Grad-CAM-style heatmap.
+- model-derived Grad-CAM heatmap when available,
+- fallback Grad-CAM-style attention map when model heatmap data is unavailable.
 
 ### Evidence Categories
 
@@ -432,21 +433,25 @@ For fake verdicts, the frontend explains likely forensic cues such as:
 
 These are explanatory frontend cues generated from the verdict and probability. They should be presented as interpretability support, not as independent proof.
 
-### Grad-CAM-Style Heatmap
+### Grad-CAM and Heatmap Explanation
 
-The current frontend heatmap is a visual explanation overlay generated on the client side from:
+DeepForensics now uses a hybrid heatmap strategy:
 
-- preview image/video,
-- fake probability,
-- verdict type.
+1. **Model-derived Grad-CAM**
+   - The NPR image detector generates an actual Grad-CAM heatmap in the backend.
+   - The heatmap is computed from the model's convolutional activations and gradients for the fake class.
+   - The detector returns the heatmap as a base64 PNG in the API response.
 
-It is useful for demonstration and user interpretability. However, it is not a true model-derived Grad-CAM because the backend detectors do not currently return gradient activation maps.
+2. **Fallback visual explanation**
+   - If a detector does not return heatmap data, the frontend displays a Grad-CAM-style attention visualization.
+   - This fallback is based on the media preview, ensemble fake probability, and verdict type.
+   - It is useful for user explanation, but it should be described as a fallback visualization rather than true model-derived Grad-CAM.
 
-For a research-grade Grad-CAM implementation, each detector would need to return heatmap image data generated from model activations.
+This means the system can truthfully claim actual backend Grad-CAM support for NPR image analysis while still providing an explainable UI for unsupported detectors and video results.
 
-## Current Grad-CAM-Style Logic Added in the Frontend
+## Current Grad-CAM Logic Added in the System
 
-The implemented heatmap component is located in:
+The frontend heatmap component is located in:
 
 ```text
 frontend/src/App.js
@@ -466,7 +471,7 @@ GradCamPreview
 
 ### Inputs Used by the Heatmap Component
 
-The heatmap receives four values from the result panel:
+The heatmap receives these values from the result panel:
 
 | Input | Meaning |
 |---|---|
@@ -474,12 +479,57 @@ The heatmap receives four values from the result panel:
 | `mediaType` | Whether the uploaded file is an image or video |
 | `previewUrl` | Local browser preview URL for the uploaded media |
 | `probability` | Final ensemble fake probability |
+| `modelResults` | Individual detector results, including optional backend heatmap fields |
 
-These values are already available on the frontend after analysis. No extra backend endpoint is required.
+These values are already available on the frontend after analysis. No extra backend endpoint is required because heatmap data travels inside the existing detector result payload.
+
+### Backend Grad-CAM Response Fields
+
+The shared SDK prediction result supports optional heatmap fields:
+
+```python
+heatmap: Optional[str] = None
+heatmap_type: Optional[str] = None
+heatmap_model: Optional[str] = None
+```
+
+For NPR image detection, the response can include:
+
+```json
+{
+  "model": "npr_deepfakedetection",
+  "probability": 0.87,
+  "prediction": 1,
+  "class": "fake",
+  "heatmap": "base64_encoded_png",
+  "heatmap_type": "gradcam",
+  "heatmap_model": "npr_deepfakedetection"
+}
+```
+
+The frontend checks `modelResults` for the first detector result containing a `heatmap`. If present, it renders that real model-derived heatmap over the uploaded media preview. If no heatmap is present, it uses the fallback CSS attention layer.
+
+### NPR Backend Grad-CAM Logic
+
+The NPR detector performs Grad-CAM in the backend using this flow:
+
+1. Decode the uploaded image into RGB.
+2. Run the model preprocessing transform.
+3. Locate the last convolutional layer in the NPR model.
+4. Register forward and backward hooks on that layer.
+5. Run a forward pass and select the fake-class logit as the target.
+6. Backpropagate from the target logit to collect gradients.
+7. Average gradients spatially to produce channel weights.
+8. Combine the weights with feature activations.
+9. Apply ReLU and normalize the activation map.
+10. Resize the heatmap to the original image dimensions.
+11. Encode the heatmap as a base64 PNG and attach it to the detector result.
+
+This is actual Grad-CAM because the heatmap is derived from model internals, not from fixed frontend label positions.
 
 ### Heatmap Intensity Logic
 
-The frontend maps the ensemble fake probability into three visual intensity levels:
+For fallback visualization, the frontend maps the ensemble fake probability into three visual intensity levels:
 
 ```text
 probability >= 0.85 => strong heatmap
@@ -496,7 +546,7 @@ const heatmapClass =
   'soft';
 ```
 
-This means that a higher fake probability creates a stronger visual attention overlay. A borderline result still shows a map, but with lower intensity.
+This means that a higher fake probability creates a stronger fallback attention overlay. A borderline result still shows a map, but with lower intensity. When a backend Grad-CAM heatmap exists, the real heatmap image is used as the primary explanation.
 
 ### Verdict-Based Heatmap Color Logic
 
@@ -524,7 +574,7 @@ This helps the user understand whether the visualization represents suspicious a
 
 ### Visual Region Labels
 
-The frontend places three labels over the preview:
+For fallback visualization, the frontend places three labels over the preview:
 
 | Label | Purpose |
 |---|---|
@@ -532,7 +582,7 @@ The frontend places three labels over the preview:
 | Edges | Indicates boundary/blending attention |
 | Texture | Indicates skin, hair, compression, or local texture attention |
 
-These labels are static frontend annotations. They are meant to make the explanation easier for users to read.
+These labels are static frontend annotations. They are meant to make the explanation easier for users to read when a model-derived heatmap is unavailable. For NPR image results with backend Grad-CAM, the heatmap itself provides the dynamic attention region.
 
 ### Image and Video Rendering
 
@@ -552,7 +602,7 @@ The same overlay is applied on top of both image and video previews.
 
 ### CSS Overlay Method
 
-The visual heatmap is created using layered CSS radial gradients:
+The fallback visual heatmap is created using layered CSS radial gradients:
 
 ```text
 radial-gradient(...)
@@ -567,17 +617,17 @@ mix-blend-mode: screen;
 filter: blur(12px) saturate(1.25);
 ```
 
-The CSS also adds a faint forensic grid overlay to make the visualization look like an inspection surface.
+The CSS also adds a faint forensic grid overlay to make the visualization look like an inspection surface. When a backend heatmap is present, the frontend renders the returned PNG as the overlay instead of relying only on these gradients.
 
 ### Why This Was Added
 
-The purpose of the frontend Grad-CAM-style logic is to make the system more explainable to a non-technical user. Instead of only showing:
+The purpose of the Grad-CAM and fallback heatmap logic is to make the system more explainable to a non-technical user. Instead of only showing:
 
 ```text
 Fake probability: 50.0%
 ```
 
-the interface also shows where the system would conceptually focus:
+the interface also shows where the detector or explanation layer is focusing:
 
 - face,
 - edges,
@@ -585,21 +635,21 @@ the interface also shows where the system would conceptually focus:
 
 This makes the output more suitable for a forensic-style dashboard and for final-year project presentation.
 
-### Important Research Limitation
+### Important Research Boundary
 
-This implementation should be described as:
+The NPR image heatmap can be described as:
+
+```text
+backend-generated model-derived Grad-CAM
+```
+
+The fallback heatmap for unsupported detectors or video should be described as:
 
 ```text
 Grad-CAM-style frontend visualization
 ```
 
-It should not be described as:
-
-```text
-true model-derived Grad-CAM
-```
-
-The reason is that true Grad-CAM requires:
+This distinction matters because true Grad-CAM requires:
 
 1. selecting a convolutional or transformer attention layer,
 2. computing gradients with respect to the target class,
@@ -607,11 +657,11 @@ The reason is that true Grad-CAM requires:
 4. resizing it to the input image/frame,
 5. returning that heatmap from the backend model service.
 
-The current system does not yet perform those backend gradient operations. It creates a believable and useful explanation overlay based on the final ensemble score.
+The NPR detector performs these backend gradient operations. UniversalFakeDetect and the video detector do not currently return model-derived heatmaps, so the frontend uses the fallback visualization for those cases.
 
-### Future True Grad-CAM Upgrade
+### Future Grad-CAM Expansion
 
-To make the heatmap fully research-grade, the backend should be extended so each detector can optionally return:
+To make heatmap support broader, each detector should optionally return:
 
 ```json
 {
@@ -626,7 +676,7 @@ To make the heatmap fully research-grade, the backend should be extended so each
 }
 ```
 
-Then the frontend can display the real model-generated heatmap instead of the current CSS-generated attention layer.
+The frontend already supports this response pattern. Future work should extend model-derived heatmap generation to UniversalFakeDetect and video frame analysis, then aggregate frame-level video heatmaps into a temporal explanation.
 
 ## Dataset Used
 
@@ -930,9 +980,9 @@ The dataset is useful because:
 2. **Video benchmark metrics are not saved locally**
    - The project integrates Cross-Efficient ViT, but local video accuracy must be evaluated separately.
 
-3. **Frontend heatmap is not true model Grad-CAM**
-   - The current heatmap is frontend-generated for explainability.
-   - True Grad-CAM requires backend model activation maps.
+3. **Grad-CAM coverage is partial**
+   - NPR image detection returns backend-generated Grad-CAM.
+   - UniversalFakeDetect and the video detector currently rely on fallback frontend visualization because they do not return model activation heatmaps.
 
 4. **Dataset is face-centric**
    - Performance may not transfer perfectly to non-face synthetic images or full-scene AI media.
@@ -965,13 +1015,13 @@ It is especially useful for:
 
 A safe and accurate claim is:
 
-> DeepForensics implements an explainable deepfake detection framework for image and video media. It integrates NPR, UniversalFakeDetect, and Cross-Efficient ViT into a Dockerized full-stack system, combines model predictions through ensemble fusion, and presents the result through a forensic dashboard with confidence, evidence summaries, and Grad-CAM-style visual explanation. On the available 20,000-sample image meta-feature dataset, the best saved meta-learner achieved 73.70% accuracy and 0.8134 ROC AUC on a balanced 5,000-sample test set.
+> DeepForensics implements an explainable deepfake detection framework for image and video media. It integrates NPR, UniversalFakeDetect, and Cross-Efficient ViT into a Dockerized full-stack system, combines model predictions through ensemble fusion, and presents the result through a forensic dashboard with confidence, evidence summaries, backend-generated Grad-CAM for NPR image analysis, and fallback visual explanations for unsupported detectors. On the available 20,000-sample image meta-feature dataset, the best saved meta-learner achieved 73.70% accuracy and 0.8134 ROC AUC on a balanced 5,000-sample test set.
 
 ## Recommended Future Improvements
 
 1. Retrain the image stacking model using only the currently active image detectors.
 2. Add local benchmark metrics for video using FaceForensics++, DFDC, or Celeb-DF v2.
-3. Return true Grad-CAM heatmaps from backend detectors.
+3. Extend backend Grad-CAM heatmaps to UniversalFakeDetect and sampled video frames.
 4. Add temporal consistency metrics for video, such as frame-to-frame score variance.
 5. Add calibrated uncertainty reporting.
 6. Compare ensemble methods in the UI.

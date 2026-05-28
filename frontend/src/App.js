@@ -608,12 +608,30 @@ function buildEvidenceReport({ isFake, isIncomplete, mediaType, probability, thr
   };
 }
 
-function GradCamPreview({ isFake, mediaType, previewUrl, probability }) {
+function getModelHeatmap(modelResults = {}) {
+  const resultWithHeatmap = Object.values(modelResults).find((modelResult) => modelResult?.heatmap);
+  if (!resultWithHeatmap) return null;
+  const heatmap = resultWithHeatmap.heatmap.startsWith('data:')
+    ? resultWithHeatmap.heatmap
+    : `data:image/png;base64,${resultWithHeatmap.heatmap}`;
+  return {
+    heatmap,
+    model: resultWithHeatmap.heatmap_model || resultWithHeatmap.model || 'detector',
+    type: resultWithHeatmap.heatmap_type || 'gradcam',
+  };
+}
+
+function GradCamPreview({ isFake, mediaType, modelResults, previewUrl, probability }) {
   const heatmapClass = probability >= 0.85 ? 'strong' : probability >= 0.68 ? 'medium' : 'soft';
-  const markerLabel = isFake ? 'Suspicious attention regions' : 'Low-risk attention regions';
+  const modelHeatmap = getModelHeatmap(modelResults);
+  const markerLabel = modelHeatmap
+    ? 'Model-derived Grad-CAM'
+    : isFake
+      ? 'Suspicious attention regions'
+      : 'Low-risk attention regions';
 
   return (
-    <div className={`ds-gradcam ${isFake ? 'fake' : 'real'} ${heatmapClass}`}>
+    <div className={`ds-gradcam ${isFake ? 'fake' : 'real'} ${heatmapClass} ${modelHeatmap ? 'has-real-map' : ''}`}>
       <div className="ds-gradcam-frame">
         {previewUrl ? (
           mediaType === 'video' ? (
@@ -627,21 +645,36 @@ function GradCamPreview({ isFake, mediaType, previewUrl, probability }) {
             <span>No preview available</span>
           </div>
         )}
-        <div className="ds-gradcam-overlay" />
+        {modelHeatmap ? (
+          <img className="ds-gradcam-realmap" src={modelHeatmap.heatmap} alt="Model-derived Grad-CAM heatmap" />
+        ) : (
+          <div className="ds-gradcam-overlay" />
+        )}
         <div className="ds-gradcam-grid" />
-        <span className="ds-gradcam-marker marker-a">Face</span>
-        <span className="ds-gradcam-marker marker-b">Edges</span>
-        <span className="ds-gradcam-marker marker-c">Texture</span>
+        {!modelHeatmap && (
+          <>
+            <span className="ds-gradcam-marker marker-a">Face</span>
+            <span className="ds-gradcam-marker marker-b">Edges</span>
+            <span className="ds-gradcam-marker marker-c">Texture</span>
+          </>
+        )}
       </div>
       <div className="ds-gradcam-meta">
         <div>
           <span className="ds-label">Grad-CAM style map</span>
           <strong>{markerLabel}</strong>
         </div>
-        <p>
-          Frontend-generated attention visualization based on the ensemble score. For production-grade Grad-CAM, detectors must return
-          model-layer heatmap data from the API.
-        </p>
+        {modelHeatmap ? (
+          <p>
+            Backend-generated {modelHeatmap.type.toUpperCase()} heatmap from {modelHeatmap.model.replace(/_/g, ' ')}. The overlay highlights
+            regions that most influenced the detector's fake-class score.
+          </p>
+        ) : (
+          <p>
+            Frontend-generated attention visualization based on the ensemble score. For production-grade Grad-CAM, detectors must return
+            model-layer heatmap data from the API.
+          </p>
+        )}
       </div>
     </div>
   );
@@ -745,7 +778,13 @@ function ResultsPanel({ previewUrl, results, mediaType, threshold }) {
             <Gauge size={18} />
             Grad-CAM heatmap
           </div>
-          <GradCamPreview isFake={isFake} mediaType={mediaType} previewUrl={previewUrl} probability={probability} />
+          <GradCamPreview
+            isFake={isFake}
+            mediaType={mediaType}
+            modelResults={results.model_results}
+            previewUrl={previewUrl}
+            probability={probability}
+          />
         </div>
 
         <div className="ds-score-panel ds-evidence-panel">

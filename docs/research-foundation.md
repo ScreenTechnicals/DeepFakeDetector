@@ -6,7 +6,7 @@
 
 ## Project Summary
 
-DeepForensics is a deepfake forensics system that combines multiple state-of-the-art detection models into one practical web application. The system accepts image and video inputs, runs detector services through a FastAPI gateway, fuses their outputs using ensemble methods, and presents the result through a forensic-style frontend with confidence scores, evidence summaries, and Grad-CAM-style visual explanations.
+DeepForensics is a deepfake forensics system that combines multiple state-of-the-art detection models into one practical web application. The system accepts image and video inputs, runs detector services through a FastAPI gateway, fuses their outputs using ensemble methods, and presents the result through a forensic-style frontend with confidence scores, evidence summaries, and visual explanations. For the NPR image detector, the backend returns an actual Grad-CAM heatmap; for detectors that do not expose heatmaps, the frontend falls back to a Grad-CAM-style attention visualization.
 
 The research foundation of the project is based on generalizable deepfake detection, CLIP-based fake image recognition, video deepfake detection using EfficientNet and Vision Transformers, and ensemble fusion. The current implementation focuses on image and video detection.
 
@@ -117,8 +117,9 @@ DeepForensics is structured as a modular ensemble system:
    - The final result includes fake probability, model votes, confidence, and inference metadata.
 
 5. **Explainability Layer**
-   - The frontend presents a verdict, evidence summary, model support, verification guidance, and Grad-CAM-style heatmap visualization.
-   - The current heatmap is frontend-generated from the preview and ensemble score. True model-level Grad-CAM would require detector services to return gradient-based heatmap data.
+   - The frontend presents a verdict, evidence summary, model support, verification guidance, and visual heatmap explanation.
+   - The NPR image detector returns a backend-generated Grad-CAM heatmap based on model activations and gradients.
+   - For detectors or media types that do not return heatmap data, the frontend uses a fallback attention-style visualization based on the preview and ensemble score.
 
 ## Research Gap Addressed
 
@@ -128,7 +129,8 @@ Many deepfake detectors produce only a binary real/fake result. That is difficul
 - probability score,
 - evidence categories,
 - verification guidance,
-- visual heatmap-style explanation,
+- model-derived Grad-CAM where available,
+- visual fallback explanation for unsupported detectors,
 - modular detector expansion.
 
 This makes the project suitable as an applied research system rather than only a model demo.
@@ -137,7 +139,7 @@ This makes the project suitable as an applied research system rather than only a
 
 You can describe the project as:
 
-> Explainable Forensic Framework for Deepfake Detection through Visual–Semantic Consistency Analysis is a research-backed system implemented as DeepForensics. It integrates multiple detectors into a Dockerized full-stack application, uses NPR and CLIP-based methods for image forensics, EfficientNet and Vision Transformer-based analysis for video forensics, and ensemble fusion to produce a final verdict. The frontend improves interpretability by presenting evidence summaries, model support, confidence scores, and Grad-CAM-style attention maps.
+> Explainable Forensic Framework for Deepfake Detection through Visual–Semantic Consistency Analysis is a research-backed system implemented as DeepForensics. It integrates multiple detectors into a Dockerized full-stack application, uses NPR and CLIP-based methods for image forensics, EfficientNet and Vision Transformer-based analysis for video forensics, and ensemble fusion to produce a final verdict. The frontend improves interpretability by presenting evidence summaries, model support, confidence scores, backend-generated Grad-CAM for the NPR image detector, and fallback attention maps for unsupported detectors.
 
 ## What Is Original in This Project
 
@@ -148,6 +150,7 @@ The originality is not inventing a new neural network from scratch. The contribu
 - adding ensemble fusion across model outputs,
 - building a professional forensic dashboard,
 - generating user-facing evidence explanations,
+- returning model-derived Grad-CAM heatmaps from the NPR detector,
 - supporting future detector modules through a shared SDK pattern.
 
 ## Recommended Citation List
