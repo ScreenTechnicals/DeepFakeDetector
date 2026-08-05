@@ -1,15 +1,15 @@
 fastapi
 uvicorn[standard]
 # torch and torchvision are expected from the base pytorch image
-Pillow>=9.0.0
+Pillow>=12.3.0
 python-multipart
 numpy
 
-torch==2.6.0
+torch==2.13.0
 torchaudio==2.6.0
 torchvision==0.21.0
 lightning==2.5.0 
-transformers==4.50.0
+transformers==5.5.0
 tqdm==4.67.1 # progress bar
 timm==1.0.14 # torch models
 matplotlib

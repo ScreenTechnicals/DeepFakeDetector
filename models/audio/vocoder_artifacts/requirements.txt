@@ -1,5 +1,5 @@
 # Vocoder Artifacts Model Requirements
-torch==1.13.1
+torch==2.13.0
 torchaudio==0.13.1
 flask==2.3.0
 soundfile==0.12.1
